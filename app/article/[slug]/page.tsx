@@ -15,8 +15,11 @@ const CATEGORY_LABELS: Record<string, string> = {
   crypto: 'Crypto',
 }
 
+const SLUGS_QUERY = `*[_type == "post" && defined(slug.current)]{ "slug": slug.current }`
+
 const ARTICLE_QUERY = `*[_type == "post" && slug.current == $slug][0] {
   _id,
+  _updatedAt,
   title,
   "slug": slug.current,
   excerpt,
@@ -27,7 +30,7 @@ const ARTICLE_QUERY = `*[_type == "post" && slug.current == $slug][0] {
   body
 }`
 
-const RELATED_QUERY = `*[_type == "post" && _id != $id] | order(publishedAt desc) [0...3] {
+const RELATED_QUERY = `*[_type == "post" && _id != $id] | order(select(category == $category => 0, 1), publishedAt desc) [0...3] {
   _id,
   title,
   "slug": slug.current,
@@ -37,6 +40,27 @@ const RELATED_QUERY = `*[_type == "post" && _id != $id] | order(publishedAt desc
   "authorName": author->name,
   publishedAt
 }`
+
+export const dynamicParams = true
+
+export async function generateStaticParams() {
+  const posts = await sanityFetch(SLUGS_QUERY)
+  return Array.isArray(posts)
+    ? posts.map((p: { slug: string }) => ({ slug: p.slug }))
+    : []
+}
+
+function estimateReadingTime(body: unknown): number {
+  if (!Array.isArray(body)) return 1
+  const text = body
+    .filter((b: { _type?: string }) => b?._type === 'block')
+    .flatMap((b: { children?: { text?: string }[] }) =>
+      (b?.children ?? []).map((c) => c?.text ?? '')
+    )
+    .join(' ')
+  const words = text.split(/\s+/).filter(Boolean).length
+  return Math.max(1, Math.ceil(words / 200))
+}
 
 function formatDate(dateString: string | null) {
   if (!dateString) return ''
@@ -96,6 +120,31 @@ const portableTextComponents = {
   list: {
     bullet: (props: { children?: React.ReactNode }) => (
       <ul className="mb-4 ml-6 list-disc space-y-2 text-[#0a1628]/90">{props.children}</ul>
+    ),
+    number: (props: { children?: React.ReactNode }) => (
+      <ol className="mb-4 ml-6 list-decimal space-y-2 text-[#0a1628]/90">{props.children}</ol>
+    ),
+  },
+  listItem: {
+    bullet: (props: { children?: React.ReactNode }) => <li>{props.children}</li>,
+    number: (props: { children?: React.ReactNode }) => <li>{props.children}</li>,
+  },
+  marks: {
+    link: ({ children, value }: { children?: React.ReactNode; value?: { href?: string } }) => (
+      <a
+        href={value?.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-[#c9a84c] underline underline-offset-2 transition-colors hover:text-[#b8963d]"
+      >
+        {children}
+      </a>
+    ),
+    strong: ({ children }: { children?: React.ReactNode }) => (
+      <strong className="font-semibold text-[#0a1628]">{children}</strong>
+    ),
+    em: ({ children }: { children?: React.ReactNode }) => (
+      <em className="italic">{children}</em>
     ),
   },
 }
@@ -172,7 +221,7 @@ export default async function ArticlePage({
     )
   }
 
-  const relatedPosts = await sanityFetch(RELATED_QUERY, { id: article._id })
+  const relatedPosts = await sanityFetch(RELATED_QUERY, { id: article._id, category: article.category ?? null })
 
   const baseUrl = getBaseUrl()
   const articleUrl = `${baseUrl}/article/${article.slug}`
@@ -187,7 +236,7 @@ export default async function ArticlePage({
     description: article.excerpt ?? article.title,
     image: imageUrl ? [imageUrl] : undefined,
     datePublished: article.publishedAt ?? undefined,
-    dateModified: article.publishedAt ?? undefined,
+    dateModified: (article._updatedAt ?? article.publishedAt) ?? undefined,
     author: article.authorName
       ? {
           '@type': 'Person',
@@ -264,6 +313,12 @@ export default async function ArticlePage({
               </span>
             )}
           </div>
+
+          {article.body && article.body.length > 0 && (
+            <p className="mt-3 text-sm text-[#0a1628]/50">
+              {estimateReadingTime(article.body)} min read
+            </p>
+          )}
 
           {article.body && article.body.length > 0 && (
             <div className="prose prose-lg mt-10 max-w-none">

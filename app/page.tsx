@@ -100,7 +100,39 @@ export default async function Home() {
           </section>
         )}
 
+        {/* Category quick-links */}
+        <section className="border-b border-[#0a1628]/10">
+          <div className="mx-auto max-w-6xl px-4 py-5 sm:px-6 lg:px-8">
+            <div className="flex flex-wrap gap-2">
+              {[
+                { label: 'Markets', href: '/category/markets' },
+                { label: 'Investing', href: '/category/investing' },
+                { label: 'Personal Finance', href: '/category/personal-finance' },
+                { label: 'Economy', href: '/category/economy' },
+                { label: 'Crypto', href: '/category/crypto' },
+              ].map(({ label, href }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="rounded-full border border-[#0a1628]/20 px-4 py-1.5 text-sm font-medium text-[#0a1628] transition-colors hover:border-[#c9a84c] hover:bg-[#c9a84c] hover:text-[#0a1628]"
+                >
+                  {label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Empty state */}
+        {!heroPost && (
+          <section className="mx-auto max-w-6xl px-4 py-24 sm:px-6 lg:px-8 text-center">
+            <p className="font-serif text-2xl font-bold text-[#0a1628]">No articles yet</p>
+            <p className="mt-3 text-[#0a1628]/70">Check back soon — new articles are published weekly.</p>
+          </section>
+        )}
+
         {/* Article grid — 6 most recent */}
+        {gridPosts.length > 0 && (
         <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
           <h2 className="font-serif text-2xl font-bold text-[#0a1628] sm:text-3xl">
             Latest Articles
@@ -152,6 +184,7 @@ export default async function Home() {
             ))}
           </ul>
         </section>
+        )}
 
         {/* About section (anchor for nav) */}
         <section id="about" className="border-t border-[#0a1628]/10 bg-[#0a1628]/[0.02]">
