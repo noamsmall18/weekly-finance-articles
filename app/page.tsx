@@ -1,65 +1,170 @@
-import Image from "next/image";
+import Image from 'next/image'
+import Link from 'next/link'
+import { sanityFetch, urlFor } from '@/lib/sanity'
+import { Navbar } from '@/app/components/Navbar'
+import { Footer } from '@/app/components/Footer'
 
-export default function Home() {
+const CATEGORY_LABELS: Record<string, string> = {
+  markets: 'Markets',
+  investing: 'Investing',
+  personalFinance: 'Personal Finance',
+  economy: 'Economy',
+  crypto: 'Crypto',
+}
+
+const HOMEPAGE_QUERY = `*[_type == "post"] | order(publishedAt desc) [0...7] {
+  _id,
+  title,
+  "slug": slug.current,
+  excerpt,
+  category,
+  mainImage,
+  "authorName": author->name,
+  publishedAt
+}`
+
+function formatDate(dateString: string | null) {
+  if (!dateString) return ''
+  return new Date(dateString).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+}
+
+function getCategoryLabel(value: string | null) {
+  if (!value) return 'Finance'
+  return CATEGORY_LABELS[value] ?? value
+}
+
+export default async function Home() {
+  const posts = await sanityFetch(HOMEPAGE_QUERY)
+  const heroPost = Array.isArray(posts) && posts.length > 0 ? posts[0] : null
+  const gridPosts = Array.isArray(posts) && posts.length > 1 ? posts.slice(1, 7) : []
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+    <div className="min-h-screen bg-white">
+      <Navbar />
+
+      <main>
+        {/* Hero section — most recent article */}
+        {heroPost && (
+          <section className="border-b border-[#0a1628]/10">
+            <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-18">
+              <div className="grid gap-8 lg:grid-cols-2 lg:gap-12 lg:items-center">
+                <div className="relative aspect-[16/10] w-full overflow-hidden rounded-lg bg-[#0a1628]/5 sm:aspect-[2/1]">
+                  {heroPost.mainImage ? (
+                    <Image
+                      src={urlFor(heroPost.mainImage).width(800).height(450).url()}
+                      alt={heroPost.mainImage?.alt ?? heroPost.title ?? 'Featured article'}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 1024px) 100vw, 50vw"
+                      priority
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center text-[#0a1628]/30 font-serif text-2xl">
+                      No image
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col justify-center">
+                  <span className="mb-2 inline-block w-fit rounded px-3 py-1 text-xs font-medium uppercase tracking-wide text-[#0a1628] bg-[#c9a84c]/20 text-[#c9a84c]">
+                    {getCategoryLabel(heroPost.category)}
+                  </span>
+                  <h1 className="font-serif text-3xl font-bold leading-tight text-[#0a1628] sm:text-4xl lg:text-5xl">
+                    {heroPost.title}
+                  </h1>
+                  {heroPost.excerpt && (
+                    <p className="mt-4 text-lg leading-relaxed text-[#0a1628]/80">
+                      {heroPost.excerpt}
+                    </p>
+                  )}
+                  <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#0a1628]/70">
+                    {heroPost.authorName && <span>{heroPost.authorName}</span>}
+                    {heroPost.publishedAt && (
+                      <span>{formatDate(heroPost.publishedAt)}</span>
+                    )}
+                  </div>
+                  {heroPost.slug && (
+                    <Link
+                      href={`/article/${heroPost.slug}`}
+                      className="mt-6 inline-flex w-fit items-center justify-center rounded bg-[#c9a84c] px-6 py-3 text-sm font-semibold text-[#0a1628] transition-colors hover:bg-[#b8963d]"
+                    >
+                      Read More
+                    </Link>
+                  )}
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Article grid — 6 most recent */}
+        <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+          <h2 className="font-serif text-2xl font-bold text-[#0a1628] sm:text-3xl">
+            Latest Articles
+          </h2>
+          <ul className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {gridPosts.map((post: Record<string, unknown>) => (
+              <li key={String(post._id)} className="group">
+                <Link href={post.slug ? `/article/${post.slug}` : '#'} className="block">
+                  <article className="overflow-hidden rounded-lg border border-[#0a1628]/10 bg-white transition-shadow hover:shadow-lg">
+                    <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#0a1628]/5">
+                      {post.mainImage ? (
+                        <Image
+                          src={urlFor(post.mainImage).width(600).height(340).url()}
+                          alt={(post.mainImage as { alt?: string })?.alt ?? (post.title as string) ?? 'Article'}
+                          fill
+                          className="object-cover transition-transform group-hover:scale-[1.02]"
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center text-[#0a1628]/20 font-serif">
+                          No image
+                        </div>
+                      )}
+                      <span className="absolute left-3 top-3 rounded px-2 py-1 text-xs font-medium uppercase tracking-wide bg-[#c9a84c] text-[#0a1628]">
+                        {getCategoryLabel(post.category as string)}
+                      </span>
+                    </div>
+                    <div className="p-5">
+                      <h3 className="font-serif text-xl font-semibold leading-snug text-[#0a1628] line-clamp-2">
+                        {String(post.title ?? '')}
+                      </h3>
+                      {post.excerpt ? (
+                        <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-[#0a1628]/75">
+                          {String(post.excerpt)}
+                        </p>
+                      ) : null}
+                      <div className="mt-4 flex flex-wrap items-center gap-x-3 text-xs text-[#0a1628]/60">
+                        {post.authorName ? (
+                          <span>{String(post.authorName)}</span>
+                        ) : null}
+                        {post.publishedAt ? (
+                          <span>{formatDate(post.publishedAt as string)}</span>
+                        ) : null}
+                      </div>
+                    </div>
+                  </article>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* About section (anchor for nav) */}
+        <section id="about" className="border-t border-[#0a1628]/10 bg-[#0a1628]/[0.02]">
+          <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+            <h2 className="font-serif text-2xl font-bold text-[#0a1628]">About</h2>
+            <p className="mt-4 max-w-2xl text-[#0a1628]/80 leading-relaxed">
+              Weekly Finance Articles brings you clear, thoughtful coverage of markets, investing, personal finance, and the economy. Our goal is to help you make better decisions with your money.
+            </p>
+          </div>
+        </section>
       </main>
+
+      <Footer />
     </div>
-  );
+  )
 }
