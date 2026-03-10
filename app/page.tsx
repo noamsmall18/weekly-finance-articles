@@ -131,10 +131,13 @@ export default async function Home() {
                     {heroPost.slug && (
                       <Link
                         href={`/article/${heroPost.slug}`}
-                        className="mt-6 inline-flex w-fit items-center gap-2 rounded-lg bg-[#0a1628] dark:bg-[#c9a84c] px-6 py-3 text-sm font-semibold text-white dark:text-[#0a1628] transition-all duration-200 hover:bg-[#c9a84c] hover:text-[#0a1628] dark:hover:bg-[#b8963d]"
+                        className="group mt-6 inline-flex w-fit items-center gap-2 rounded-lg bg-[#0a1628] dark:bg-[#c9a84c] px-6 py-3 text-sm font-semibold text-white dark:text-[#0a1628] transition-all duration-200 hover:bg-[#c9a84c] hover:text-[#0a1628] dark:hover:bg-[#b8963d]"
                       >
                         Read Article
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <svg
+                          width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+                          className="transition-transform duration-200 group-hover:translate-x-1"
+                        >
                           <line x1="5" y1="12" x2="19" y2="12" />
                           <polyline points="12 5 19 12 12 19" />
                         </svg>
@@ -205,7 +208,7 @@ export default async function Home() {
               {gridPosts.map((post: Record<string, unknown>) => (
                 <FadeInItem key={String(post._id)}>
                   <Link href={post.slug ? `/article/${post.slug}` : '#'} className="block group h-full">
-                    <article className="h-full overflow-hidden rounded-xl border border-[#0a1628]/10 dark:border-white/8 bg-white dark:bg-[#122035] transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                    <article className="h-full overflow-hidden rounded-xl border border-[#0a1628]/10 dark:border-white/[0.07] bg-white dark:bg-[#122035] transition-all duration-300 hover:shadow-2xl hover:-translate-y-1.5 hover:border-[#0a1628]/20 dark:hover:border-white/15">
                       <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#0a1628]/5 dark:bg-white/5">
                         {post.mainImage ? (
                           <Image
@@ -218,6 +221,8 @@ export default async function Home() {
                         ) : (
                           <div className="absolute inset-0 flex items-center justify-center text-[#0a1628]/20 dark:text-white/15 font-serif">No image</div>
                         )}
+                        {/* Subtle gradient overlay on image bottom */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         <div className="absolute left-3 top-3 flex items-center gap-1.5">
                           <span className="rounded px-2 py-1 text-[10px] font-bold uppercase tracking-wide bg-[#c9a84c] text-[#0a1628]">
                             {getCategoryLabel(post.category as string)}
