@@ -1,7 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const NAV_LINKS = [
@@ -10,52 +12,73 @@ const NAV_LINKS = [
   { label: 'Personal Finance', href: '/category/personal-finance' },
   { label: 'Economy', href: '/category/economy' },
   { label: 'Crypto', href: '/category/crypto' },
-  { label: 'Archive', href: '/archive' },
-  { label: 'About Us', href: '/#about' },
 ]
 
 export function Navbar() {
   const [open, setOpen] = useState(false)
+  const router = useRouter()
+
+  // Cmd+K / Ctrl+K → search
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        router.push('/search')
+      }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [router])
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[#0a1628]/10 bg-white/95 backdrop-blur-sm">
-      <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-        <Link
-          href="/"
-          className="font-serif text-lg font-bold tracking-tight text-[#0a1628] sm:text-2xl"
-        >
-          Next Gen Finance
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#0a1628]/95 backdrop-blur-sm">
+      <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+
+        {/* Logo */}
+        <Link href="/" className="flex-shrink-0">
+          <Image
+            src="/logo.jpg"
+            alt="Next Gen Finance"
+            width={1024}
+            height={559}
+            className="h-11 w-auto sm:h-13"
+            priority
+          />
         </Link>
 
         {/* Desktop nav */}
-        <ul className="hidden md:flex items-center gap-4 lg:gap-6 text-sm font-medium text-[#0a1628]">
+        <ul className="hidden md:flex items-center gap-5 lg:gap-7 text-sm font-medium">
           {NAV_LINKS.map(({ label, href }) => (
             <li key={href}>
-              <Link href={href} className="transition-colors hover:text-[#c9a84c]">
+              <Link href={href} className="text-white/75 transition-colors hover:text-[#c9a84c]">
                 {label}
               </Link>
             </li>
           ))}
-          <li>
-            <Link
-              href="/search"
-              aria-label="Search"
-              className="transition-colors text-[#0a1628]/60 hover:text-[#c9a84c]"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-            </Link>
-          </li>
         </ul>
 
-        {/* Mobile right side */}
+        {/* Search — desktop */}
+        <Link
+          href="/search"
+          aria-label="Search (⌘K)"
+          className="hidden md:flex items-center gap-2 rounded-lg border border-white/15 px-3 py-1.5 text-sm text-white/40 transition-all hover:border-white/30 hover:text-white/80"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <span className="text-xs">Search</span>
+          <kbd className="hidden lg:inline-flex items-center rounded bg-white/8 px-1.5 py-0.5 text-[10px] font-mono text-white/30">
+            ⌘K
+          </kbd>
+        </Link>
+
+        {/* Mobile right */}
         <div className="flex items-center gap-3 md:hidden">
           <Link
             href="/search"
             aria-label="Search"
-            className="text-[#0a1628]/60 hover:text-[#c9a84c] transition-colors p-1"
+            className="p-1.5 text-white/50 hover:text-[#c9a84c] transition-colors"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="11" cy="11" r="8" />
@@ -63,12 +86,11 @@ export function Navbar() {
             </svg>
           </Link>
 
-          {/* Hamburger */}
           <button
             onClick={() => setOpen(!open)}
             aria-label="Toggle navigation menu"
             aria-expanded={open}
-            className="p-1.5 text-[#0a1628]"
+            className="p-1.5 text-white"
           >
             <div className="flex flex-col gap-[5px]">
               <motion.span
@@ -100,14 +122,14 @@ export function Navbar() {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.28, ease: 'easeInOut' }}
-            className="overflow-hidden md:hidden border-t border-[#0a1628]/10 bg-white"
+            className="overflow-hidden md:hidden border-t border-white/10 bg-[#0a1628]"
           >
             <ul className="flex flex-col px-4 py-5 gap-1">
               {NAV_LINKS.map(({ label, href }) => (
                 <li key={href}>
                   <Link
                     href={href}
-                    className="flex items-center py-2.5 text-sm font-medium text-[#0a1628] hover:text-[#c9a84c] transition-colors"
+                    className="flex items-center py-2.5 text-sm font-medium text-white/75 hover:text-[#c9a84c] transition-colors"
                     onClick={() => setOpen(false)}
                   >
                     {label}

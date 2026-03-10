@@ -22,3 +22,24 @@ body {
 .font-serif {
   font-family: var(--font-lora), Georgia, serif;
 }
+
+html {
+  scroll-behavior: smooth;
+}
+
+@keyframes ticker-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-ticker {
+  animation: ticker-scroll 35s linear infinite;
+}
+
+.animate-ticker:hover {
+  animation-play-state: paused;
+}
