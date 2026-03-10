@@ -5,7 +5,6 @@ import { Navbar } from '@/app/components/Navbar'
 import { Footer } from '@/app/components/Footer'
 import { NewsletterSignup } from '@/app/components/NewsletterSignup'
 import { FadeIn, FadeInStagger, FadeInItem } from '@/app/components/FadeIn'
-import { HeadlineTicker } from '@/app/components/HeadlineTicker'
 import { MarketBar } from '@/app/components/MarketBar'
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -29,11 +28,6 @@ const HOMEPAGE_QUERY = `*[_type == "post"] | order(coalesce(publishedAt, _create
   tags
 }`
 
-const TICKER_QUERY = `*[_type == "post"] | order(coalesce(publishedAt, _createdAt) desc) [0...14] {
-  title,
-  "slug": slug.current,
-  category
-}`
 
 function formatDate(dateString: string | null) {
   if (!dateString) return ''
@@ -55,10 +49,7 @@ function isNew(dateString: string | null): boolean {
 }
 
 export default async function Home() {
-  const [posts, tickerPosts] = await Promise.all([
-    sanityFetch(HOMEPAGE_QUERY),
-    sanityFetch(TICKER_QUERY),
-  ])
+  const posts = await sanityFetch(HOMEPAGE_QUERY)
 
   const heroPost = Array.isArray(posts) && posts.length > 0 ? posts[0] : null
   const gridPosts = Array.isArray(posts) && posts.length > 1 ? posts.slice(1, 7) : []
@@ -67,10 +58,6 @@ export default async function Home() {
     <div className="min-h-screen bg-white dark:bg-[#0c1827] transition-colors duration-200">
       <Navbar />
       <MarketBar />
-
-      {Array.isArray(tickerPosts) && tickerPosts.length > 0 && (
-        <HeadlineTicker posts={tickerPosts} />
-      )}
 
       <main>
         {/* Hero */}

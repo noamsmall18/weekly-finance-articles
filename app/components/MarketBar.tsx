@@ -1,26 +1,27 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface MarketItem {
+  label: string
   price: number
   changePercent: number
+  prefix?: string
+  decimals?: number
 }
 
 interface MarketData {
-  sp500: MarketItem | null
-  dow: MarketItem | null
-  nasdaq: MarketItem | null
-  btc: MarketItem | null
+  items: MarketItem[]
   marketOpen: boolean
   timestamp: number
 }
 
-function formatPrice(price: number, isCrypto = false): string {
-  if (isCrypto) {
-    return '$' + price.toLocaleString('en-US', { maximumFractionDigits: 0 })
-  }
-  return price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+function formatPrice(item: MarketItem): string {
+  const formatted = item.price.toLocaleString('en-US', {
+    minimumFractionDigits: item.decimals ?? 2,
+    maximumFractionDigits: item.decimals ?? 2,
+  })
+  return item.prefix ? `${item.prefix}${formatted}` : formatted
 }
 
 function formatChange(pct: number): string {
@@ -28,121 +29,84 @@ function formatChange(pct: number): string {
   return `${sign}${pct.toFixed(2)}%`
 }
 
-function Ticker({
-  label,
-  item,
-  isCrypto = false,
-}: {
-  label: string
-  item: MarketItem | null
-  isCrypto?: boolean
-}) {
-  if (!item) return null
-  const isUp = item.changePercent >= 0
-
-  return (
-    <span className="inline-flex items-center gap-2 px-4">
-      <span className="text-[#0a1628]/40 dark:text-white/35 text-[10px] font-bold uppercase tracking-[0.12em]">
-        {label}
-      </span>
-      <span className="text-[11px] font-semibold text-[#0a1628]/75 dark:text-white/70 tabular-nums">
-        {formatPrice(item.price, isCrypto)}
-      </span>
-      <span
-        className={[
-          'text-[10px] font-semibold tabular-nums',
-          isUp ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400',
-        ].join(' ')}
-      >
-        {formatChange(item.changePercent)}
-      </span>
-    </span>
-  )
-}
-
 export function MarketBar() {
   const [data, setData] = useState<MarketData | null>(null)
-  const [loading, setLoading] = useState(true)
+  // Keep a ref so the interval always reads latest data without re-subscribing
+  const dataRef = useRef<MarketData | null>(null)
 
   async function load() {
     try {
       const res = await fetch('/api/market-data')
-      if (res.ok) setData(await res.json())
+      if (!res.ok) return
+      const json: MarketData = await res.json()
+      dataRef.current = json
+      setData(json)
     } catch {
-      // silently fail
-    } finally {
-      setLoading(false)
+      // silently fail — bar just won't update
     }
   }
 
   useEffect(() => {
     load()
-    const interval = setInterval(load, 30_000)
-    return () => clearInterval(interval)
+    const id = setInterval(load, 30_000)
+    return () => clearInterval(id)
   }, [])
 
-  const hasAnyData = data?.sp500 || data?.dow || data?.nasdaq || data?.btc
-  if (!loading && !hasAnyData) return null
+  // Don't render until we have data
+  if (!data || data.items.length === 0) return null
 
-  const marketOpen = data?.marketOpen ?? false
+  // Duplicate items for seamless loop
+  const items = [...data.items, ...data.items]
+  const marketOpen = data.marketOpen
 
   return (
-    <div className="border-b border-[#0a1628]/8 dark:border-white/8 overflow-x-auto scrollbar-none">
-      <div className="flex items-center min-w-max mx-auto px-2 py-1.5">
+    <div className="border-b border-[#0a1628]/8 dark:border-white/8 bg-white dark:bg-[#0c1827]">
+      <div className="relative flex items-center h-8">
 
-        {/* Market status indicator */}
-        <span className="flex-shrink-0 flex items-center gap-1.5 pl-2 pr-3">
-          <span className="relative flex h-1.5 w-1.5">
+        {/* Static left label — overlaps the scroll */}
+        <div className="relative z-10 flex-shrink-0 flex items-center gap-2 pl-4 pr-4 h-full bg-white dark:bg-[#0c1827]">
+          <span className="relative flex h-1.5 w-1.5 flex-shrink-0">
             {marketOpen ? (
               <>
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-60" />
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
               </>
             ) : (
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#0a1628]/25 dark:bg-white/25" />
+              <span className="inline-flex h-1.5 w-1.5 rounded-full bg-[#0a1628]/20 dark:bg-white/25" />
             )}
           </span>
-          <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#0a1628]/35 dark:text-white/30">
-            {marketOpen ? 'Live' : 'Closed'}
+          <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-[#0a1628]/40 dark:text-white/35 whitespace-nowrap">
+            {marketOpen ? 'Markets' : 'Closed'}
           </span>
-        </span>
+          {/* Gradient fade from label into scrolling area */}
+          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white dark:from-[#0c1827] to-transparent pointer-events-none" />
+        </div>
 
-        <span className="text-[#0a1628]/12 dark:text-white/12 text-xs select-none">|</span>
-
-        {loading ? (
-          <span className="flex items-center gap-6 px-4">
-            {['S&P 500', 'DOW', 'NASDAQ', 'BTC'].map((label) => (
-              <span key={label} className="flex items-center gap-2">
-                <span className="text-[10px] text-[#0a1628]/30 dark:text-white/25 uppercase tracking-widest font-bold">
-                  {label}
+        {/* Scrolling prices */}
+        <div className="overflow-hidden flex-1 ticker-mask">
+          <div className="animate-ticker flex items-center whitespace-nowrap">
+            {items.map((item, i) => {
+              const isUp = item.changePercent >= 0
+              return (
+                <span key={i} className="inline-flex items-center gap-2 px-5">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#0a1628]/40 dark:text-white/35">
+                    {item.label}
+                  </span>
+                  <span className="text-[11px] font-semibold tabular-nums text-[#0a1628]/80 dark:text-white/70">
+                    {formatPrice(item)}
+                  </span>
+                  <span className={[
+                    'text-[10px] font-semibold tabular-nums',
+                    isUp ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400',
+                  ].join(' ')}>
+                    {isUp ? '▲' : '▼'} {formatChange(item.changePercent)}
+                  </span>
+                  <span className="text-[#0a1628]/12 dark:text-white/12 text-xs select-none ml-2">·</span>
                 </span>
-                <span className="h-2.5 w-16 rounded bg-[#0a1628]/6 dark:bg-white/6 animate-pulse" />
-              </span>
-            ))}
-          </span>
-        ) : (
-          <>
-            <Ticker label="S&P 500" item={data?.sp500 ?? null} />
-            {data?.dow && (
-              <>
-                <span className="text-[#0a1628]/12 dark:text-white/12 text-xs select-none">|</span>
-                <Ticker label="DOW" item={data.dow} />
-              </>
-            )}
-            {data?.nasdaq && (
-              <>
-                <span className="text-[#0a1628]/12 dark:text-white/12 text-xs select-none">|</span>
-                <Ticker label="NASDAQ" item={data.nasdaq} />
-              </>
-            )}
-            {data?.btc && (
-              <>
-                <span className="text-[#0a1628]/12 dark:text-white/12 text-xs select-none">|</span>
-                <Ticker label="BTC" item={data.btc} isCrypto />
-              </>
-            )}
-          </>
-        )}
+              )
+            })}
+          </div>
+        </div>
       </div>
     </div>
   )
