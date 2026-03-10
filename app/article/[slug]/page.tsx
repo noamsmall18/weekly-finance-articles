@@ -13,6 +13,7 @@ import { TableOfContents } from '@/app/components/TableOfContents'
 import type { TocHeading } from '@/app/components/TableOfContents'
 import { FadeIn, FadeInStagger, FadeInItem } from '@/app/components/FadeIn'
 import { NewsletterSignup } from '@/app/components/NewsletterSignup'
+import { MarketBar } from '@/app/components/MarketBar'
 
 const CATEGORY_LABELS: Record<string, string> = {
   markets: 'Markets',
@@ -311,6 +312,7 @@ export default async function ArticlePage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <ReadingProgressBar />
+      <MarketBar />
       <BackToTop />
       <Navbar />
 

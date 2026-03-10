@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { sanityFetch } from '@/lib/sanity'
 import { Navbar } from '@/app/components/Navbar'
 import { Footer } from '@/app/components/Footer'
+import { MarketBar } from '@/app/components/MarketBar'
 import { SearchClient } from './SearchClient'
 
 export const metadata: Metadata = {
@@ -28,6 +29,7 @@ export default async function SearchPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-[#0c1827] transition-colors duration-200">
       <Navbar />
+      <MarketBar />
 
       <main>
         <section className="border-b border-[#0a1628]/10 dark:border-white/10 bg-[#0a1628]/[0.02] dark:bg-white/[0.03]">

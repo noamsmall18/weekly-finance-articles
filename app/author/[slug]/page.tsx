@@ -7,6 +7,7 @@ import { sanityFetch, urlFor } from '@/lib/sanity'
 import { Navbar } from '@/app/components/Navbar'
 import { Footer } from '@/app/components/Footer'
 import { FadeIn, FadeInStagger, FadeInItem } from '@/app/components/FadeIn'
+import { MarketBar } from '@/app/components/MarketBar'
 
 const CATEGORY_LABELS: Record<string, string> = {
   markets: 'Markets',
@@ -97,6 +98,7 @@ export default async function AuthorPage({
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
+      <MarketBar />
 
       <main>
         <FadeIn>

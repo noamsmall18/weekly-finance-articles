@@ -1,11 +1,13 @@
 import Link from 'next/link'
 import { Navbar } from '@/app/components/Navbar'
 import { Footer } from '@/app/components/Footer'
+import { MarketBar } from '@/app/components/MarketBar'
 
 export default function NotFound() {
   return (
     <div className="min-h-screen bg-white dark:bg-[#0c1827] transition-colors duration-200">
       <Navbar />
+      <MarketBar />
       <main className="mx-auto max-w-3xl px-4 py-32 text-center sm:px-6 lg:px-8">
         <p className="font-serif text-[7rem] font-bold leading-none text-[#0a1628]/5 dark:text-white/[0.04] select-none">
           404

@@ -6,6 +6,7 @@ import { Footer } from '@/app/components/Footer'
 import { NewsletterSignup } from '@/app/components/NewsletterSignup'
 import { FadeIn, FadeInStagger, FadeInItem } from '@/app/components/FadeIn'
 import { HeadlineTicker } from '@/app/components/HeadlineTicker'
+import { MarketBar } from '@/app/components/MarketBar'
 
 const CATEGORY_LABELS: Record<string, string> = {
   markets: 'Markets',
@@ -65,6 +66,7 @@ export default async function Home() {
   return (
     <div className="min-h-screen bg-white dark:bg-[#0c1827] transition-colors duration-200">
       <Navbar />
+      <MarketBar />
 
       {Array.isArray(tickerPosts) && tickerPosts.length > 0 && (
         <HeadlineTicker posts={tickerPosts} />
