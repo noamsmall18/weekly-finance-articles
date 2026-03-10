@@ -115,7 +115,7 @@ function getCategoryLabel(value: string | null) {
 
 function isNew(dateString: string | null): boolean {
   if (!dateString) return false
-  return Date.now() - new Date(dateString).getTime() < 7 * 24 * 60 * 60 * 1000
+  return Date.now() - new Date(dateString).getTime() < 24 * 60 * 60 * 1000
 }
 
 // PortableText renderers — headings get IDs for TOC anchor scrolling

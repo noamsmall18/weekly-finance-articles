@@ -49,8 +49,7 @@ function getCategoryLabel(value: string | null) {
 
 function isNew(dateString: string | null): boolean {
   if (!dateString) return false
-  const diffMs = Date.now() - new Date(dateString).getTime()
-  return diffMs < 7 * 24 * 60 * 60 * 1000
+  return Date.now() - new Date(dateString).getTime() < 24 * 60 * 60 * 1000
 }
 
 export default async function Home() {
