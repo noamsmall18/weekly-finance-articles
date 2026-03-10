@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   description: 'Search all articles on Next Gen Finance.',
 }
 
-const ALL_POSTS_QUERY = `*[_type == "post"] | order(publishedAt desc) {
+const ALL_POSTS_QUERY = `*[_type == "post"] | order(coalesce(publishedAt, _createdAt) desc) {
   _id,
   title,
   "slug": slug.current,
@@ -18,7 +18,7 @@ const ALL_POSTS_QUERY = `*[_type == "post"] | order(publishedAt desc) {
   category,
   mainImage,
   "authorName": author->name,
-  publishedAt,
+  "publishedAt": coalesce(publishedAt, _createdAt),
   tags
 }`
 

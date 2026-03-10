@@ -39,7 +39,7 @@ const ARTICLE_QUERY = `*[_type == "post" && slug.current == $slug][0] {
   tags
 }`
 
-const RELATED_QUERY = `*[_type == "post" && _id != $id && defined(publishedAt)] | order(select(category == $category => 0, 1), publishedAt desc) [0...3] {
+const RELATED_QUERY = `*[_type == "post" && _id != $id] | order(select(category == $category => 0, 1), coalesce(publishedAt, _createdAt) desc) [0...3] {
   _id,
   title,
   "slug": slug.current,
@@ -47,7 +47,7 @@ const RELATED_QUERY = `*[_type == "post" && _id != $id && defined(publishedAt)] 
   category,
   mainImage,
   "authorName": author->name,
-  publishedAt
+  "publishedAt": coalesce(publishedAt, _createdAt)
 }`
 
 export const dynamicParams = true

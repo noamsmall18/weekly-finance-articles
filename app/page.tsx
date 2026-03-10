@@ -15,7 +15,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   crypto: 'Crypto',
 }
 
-const HOMEPAGE_QUERY = `*[_type == "post" && defined(publishedAt)] | order(publishedAt desc) [0...7] {
+const HOMEPAGE_QUERY = `*[_type == "post"] | order(coalesce(publishedAt, _createdAt) desc) [0...7] {
   _id,
   title,
   "slug": slug.current,
@@ -23,11 +23,11 @@ const HOMEPAGE_QUERY = `*[_type == "post" && defined(publishedAt)] | order(publi
   category,
   mainImage,
   "authorName": author->name,
-  publishedAt,
+  "publishedAt": coalesce(publishedAt, _createdAt),
   tags
 }`
 
-const TICKER_QUERY = `*[_type == "post" && defined(publishedAt)] | order(publishedAt desc) [0...14] {
+const TICKER_QUERY = `*[_type == "post"] | order(coalesce(publishedAt, _createdAt) desc) [0...14] {
   title,
   "slug": slug.current,
   category

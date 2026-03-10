@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Tell Tailwind v4 to use the .dark class (set by next-themes) instead of OS media query */
+@custom-variant dark (&:is(.dark *));
+
 :root {
   color-scheme: light;
   --background: #ffffff;

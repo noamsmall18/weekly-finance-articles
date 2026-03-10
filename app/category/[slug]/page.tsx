@@ -23,7 +23,7 @@ const SLUG_TO_CATEGORY: Record<string, string> = {
   crypto: 'crypto',
 }
 
-const CATEGORY_QUERY = `*[_type == "post" && category == $category] | order(publishedAt desc) {
+const CATEGORY_QUERY = `*[_type == "post" && category == $category] | order(coalesce(publishedAt, _createdAt) desc) {
   _id,
   title,
   "slug": slug.current,
@@ -32,7 +32,7 @@ const CATEGORY_QUERY = `*[_type == "post" && category == $category] | order(publ
   mainImage,
   "authorName": author->name,
   "authorSlug": author->slug.current,
-  publishedAt,
+  "publishedAt": coalesce(publishedAt, _createdAt),
   tags
 }`
 

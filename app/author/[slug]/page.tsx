@@ -26,14 +26,14 @@ const AUTHOR_QUERY = `*[_type == "author" && slug.current == $slug][0] {
   bio
 }`
 
-const AUTHOR_POSTS_QUERY = `*[_type == "post" && author._ref == $authorId] | order(publishedAt desc) {
+const AUTHOR_POSTS_QUERY = `*[_type == "post" && author._ref == $authorId] | order(coalesce(publishedAt, _createdAt) desc) {
   _id,
   title,
   "slug": slug.current,
   excerpt,
   category,
   mainImage,
-  publishedAt,
+  "publishedAt": coalesce(publishedAt, _createdAt),
   tags
 }`
 
