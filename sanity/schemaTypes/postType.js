@@ -31,6 +31,7 @@ export const postType = defineType({
           {title: 'Personal Finance', value: 'personalFinance'},
           {title: 'Economy', value: 'economy'},
           {title: 'Crypto', value: 'crypto'},
+          {title: 'Business', value: 'business'},
         ],
         layout: 'dropdown',
       },

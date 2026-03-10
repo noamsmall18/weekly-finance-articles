@@ -11,6 +11,7 @@ const NAV_LINKS = [
   { label: 'Investing', href: '/category/investing' },
   { label: 'Personal Finance', href: '/category/personal-finance' },
   { label: 'Economy', href: '/category/economy' },
+  { label: 'Business', href: '/category/business' },
   { label: 'Crypto', href: '/category/crypto' },
 ]
 

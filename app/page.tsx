@@ -13,6 +13,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   personalFinance: 'Personal Finance',
   economy: 'Economy',
   crypto: 'Crypto',
+  business: 'Business',
 }
 
 const HOMEPAGE_QUERY = `*[_type == "post"] | order(coalesce(publishedAt, _createdAt) desc) [0...7] {
@@ -160,6 +161,7 @@ export default async function Home() {
                   { label: 'Investing', href: '/category/investing' },
                   { label: 'Personal Finance', href: '/category/personal-finance' },
                   { label: 'Economy', href: '/category/economy' },
+                  { label: 'Business', href: '/category/business' },
                   { label: 'Crypto', href: '/category/crypto' },
                 ].map(({ label, href }) => (
                   <Link

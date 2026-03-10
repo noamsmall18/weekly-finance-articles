@@ -14,6 +14,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   personalFinance: 'Personal Finance',
   economy: 'Economy',
   crypto: 'Crypto',
+  business: 'Business',
 }
 
 const AUTHOR_SLUGS_QUERY = `*[_type == "author" && defined(slug.current)]{ "slug": slug.current }`

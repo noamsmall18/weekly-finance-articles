@@ -13,6 +13,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   personalFinance: 'Personal Finance',
   economy: 'Economy',
   crypto: 'Crypto',
+  business: 'Business',
 }
 
 const SLUG_TO_CATEGORY: Record<string, string> = {
@@ -21,6 +22,7 @@ const SLUG_TO_CATEGORY: Record<string, string> = {
   'personal-finance': 'personalFinance',
   economy: 'economy',
   crypto: 'crypto',
+  business: 'business',
 }
 
 const CATEGORY_QUERY = `*[_type == "post" && category == $category] | order(coalesce(publishedAt, _createdAt) desc) {

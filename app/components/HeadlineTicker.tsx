@@ -6,6 +6,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   personalFinance: 'Personal Finance',
   economy: 'Economy',
   crypto: 'Crypto',
+  business: 'Business',
 }
 
 interface TickerPost {

@@ -12,6 +12,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   personalFinance: 'Personal Finance',
   economy: 'Economy',
   crypto: 'Crypto',
+  business: 'Business',
 }
 
 function formatDate(dateString: string | null) {

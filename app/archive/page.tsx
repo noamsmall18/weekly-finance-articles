@@ -30,6 +30,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   personalFinance: 'Personal Finance',
   economy: 'Economy',
   crypto: 'Crypto',
+  business: 'Business',
 }
 
 function formatDate(dateString: string | null) {
@@ -52,6 +53,7 @@ const CATEGORY_HREFS: Record<string, string> = {
   personalFinance: '/category/personal-finance',
   economy: '/category/economy',
   crypto: '/category/crypto',
+  business: '/category/business',
 }
 
 export default async function ArchivePage() {
