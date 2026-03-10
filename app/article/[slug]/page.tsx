@@ -12,6 +12,7 @@ import { BackToTop } from '@/app/components/BackToTop'
 import { TableOfContents } from '@/app/components/TableOfContents'
 import type { TocHeading } from '@/app/components/TableOfContents'
 import { FadeIn, FadeInStagger, FadeInItem } from '@/app/components/FadeIn'
+import { NewsletterSignup } from '@/app/components/NewsletterSignup'
 
 const CATEGORY_LABELS: Record<string, string> = {
   markets: 'Markets',
@@ -133,7 +134,7 @@ const portableTextComponents = {
             sizes="(max-width: 768px) 100vw, 800px"
           />
           {value.alt && (
-            <figcaption className="mt-2 text-center text-xs text-[#0a1628]/40">
+            <figcaption className="mt-2 text-center text-xs text-[#0a1628]/40 dark:text-white/35">
               {value.alt}
             </figcaption>
           )}
@@ -145,7 +146,7 @@ const portableTextComponents = {
     h1: ({ value, children }: { value?: Record<string, unknown>; children?: React.ReactNode }) => {
       const text = ((value?.children as Array<{ text?: string }>) ?? []).map((c) => c.text ?? '').join('')
       return (
-        <h1 id={makeHeadingId(text)} className="mt-10 scroll-mt-24 font-serif text-3xl font-bold text-[#0a1628] first:mt-0">
+        <h1 id={makeHeadingId(text)} className="mt-10 scroll-mt-24 font-serif text-3xl font-bold text-[#0a1628] dark:text-white first:mt-0">
           {children}
         </h1>
       )
@@ -153,7 +154,7 @@ const portableTextComponents = {
     h2: ({ value, children }: { value?: Record<string, unknown>; children?: React.ReactNode }) => {
       const text = ((value?.children as Array<{ text?: string }>) ?? []).map((c) => c.text ?? '').join('')
       return (
-        <h2 id={makeHeadingId(text)} className="mt-10 scroll-mt-24 font-serif text-2xl font-bold text-[#0a1628]">
+        <h2 id={makeHeadingId(text)} className="mt-10 scroll-mt-24 font-serif text-2xl font-bold text-[#0a1628] dark:text-white">
           {children}
         </h2>
       )
@@ -161,29 +162,29 @@ const portableTextComponents = {
     h3: ({ value, children }: { value?: Record<string, unknown>; children?: React.ReactNode }) => {
       const text = ((value?.children as Array<{ text?: string }>) ?? []).map((c) => c.text ?? '').join('')
       return (
-        <h3 id={makeHeadingId(text)} className="mt-8 scroll-mt-24 font-serif text-xl font-bold text-[#0a1628]">
+        <h3 id={makeHeadingId(text)} className="mt-8 scroll-mt-24 font-serif text-xl font-bold text-[#0a1628] dark:text-white">
           {children}
         </h3>
       )
     },
     h4: (props: { children?: React.ReactNode }) => (
-      <h4 className="mt-6 font-serif text-lg font-bold text-[#0a1628]">{props.children}</h4>
+      <h4 className="mt-6 font-serif text-lg font-bold text-[#0a1628] dark:text-white">{props.children}</h4>
     ),
     blockquote: (props: { children?: React.ReactNode }) => (
-      <blockquote className="my-8 border-l-4 border-[#c9a84c] bg-[#c9a84c]/5 pl-6 pr-4 py-4 rounded-r-lg italic text-[#0a1628]/80 text-lg leading-relaxed">
+      <blockquote className="my-8 border-l-4 border-[#c9a84c] bg-[#c9a84c]/5 pl-6 pr-4 py-4 rounded-r-lg italic text-[#0a1628]/80 dark:text-white/70 text-lg leading-relaxed">
         {props.children}
       </blockquote>
     ),
     normal: (props: { children?: React.ReactNode }) => (
-      <p className="mb-5 leading-[1.9] text-[#0a1628]/85 text-[1.05rem]">{props.children}</p>
+      <p className="mb-5 leading-[1.9] text-[#0a1628]/85 dark:text-white/70 text-[1.05rem]">{props.children}</p>
     ),
   },
   list: {
     bullet: (props: { children?: React.ReactNode }) => (
-      <ul className="mb-5 ml-6 list-disc space-y-2 text-[#0a1628]/85">{props.children}</ul>
+      <ul className="mb-5 ml-6 list-disc space-y-2 text-[#0a1628]/85 dark:text-white/70">{props.children}</ul>
     ),
     number: (props: { children?: React.ReactNode }) => (
-      <ol className="mb-5 ml-6 list-decimal space-y-2 text-[#0a1628]/85">{props.children}</ol>
+      <ol className="mb-5 ml-6 list-decimal space-y-2 text-[#0a1628]/85 dark:text-white/70">{props.children}</ol>
     ),
   },
   listItem: {
@@ -206,7 +207,7 @@ const portableTextComponents = {
       </a>
     ),
     strong: ({ children }: { children?: React.ReactNode }) => (
-      <strong className="font-semibold text-[#0a1628]">{children}</strong>
+      <strong className="font-semibold text-[#0a1628] dark:text-white">{children}</strong>
     ),
     em: ({ children }: { children?: React.ReactNode }) => (
       <em className="italic">{children}</em>
@@ -262,12 +263,12 @@ export default async function ArticlePage({
 
   if (!article) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-white dark:bg-[#0c1827] transition-colors duration-200">
         <Navbar />
         <main className="mx-auto max-w-3xl px-4 py-16 text-center">
-          <h1 className="font-serif text-2xl font-bold text-[#0a1628]">Article not found</h1>
+          <h1 className="font-serif text-2xl font-bold text-[#0a1628] dark:text-white">Article not found</h1>
           <Link href="/" className="mt-4 inline-flex items-center gap-2 text-[#c9a84c] hover:underline">
-            ← Back to Home
+            Back to Home
           </Link>
         </main>
         <Footer />
@@ -303,7 +304,7 @@ export default async function ArticlePage({
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-[#0c1827] transition-colors duration-200">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -314,11 +315,11 @@ export default async function ArticlePage({
 
       <main>
         {/* Back link */}
-        <div className="border-b border-[#0a1628]/10">
+        <div className="border-b border-[#0a1628]/10 dark:border-white/10">
           <div className="mx-auto max-w-6xl px-4 py-3 sm:px-6 lg:px-8">
             <Link
               href="/"
-              className="inline-flex items-center gap-2 text-sm font-medium text-[#0a1628]/55 transition-colors hover:text-[#c9a84c]"
+              className="inline-flex items-center gap-2 text-sm font-medium text-[#0a1628]/55 dark:text-white/50 transition-colors hover:text-[#c9a84c]"
             >
               <span aria-hidden>←</span> Back to Home
             </Link>
@@ -328,7 +329,7 @@ export default async function ArticlePage({
         {/* Hero image */}
         <FadeIn direction="none">
           <section>
-            <div className="relative aspect-[21/9] w-full overflow-hidden bg-[#0a1628]/5">
+            <div className="relative aspect-[21/9] w-full overflow-hidden bg-[#0a1628]/5 dark:bg-white/5">
               {article.mainImage ? (
                 <Image
                   src={urlFor(article.mainImage).width(1400).height(600).url()}
@@ -339,7 +340,7 @@ export default async function ArticlePage({
                   priority
                 />
               ) : (
-                <div className="absolute inset-0 flex items-center justify-center text-[#0a1628]/20 font-serif text-2xl">
+                <div className="absolute inset-0 flex items-center justify-center text-[#0a1628]/20 dark:text-white/15 font-serif text-2xl">
                   No image
                 </div>
               )}
@@ -373,34 +374,34 @@ export default async function ArticlePage({
                     (article.tags as string[]).map((tag) => (
                       <span
                         key={tag}
-                        className="rounded-full bg-[#0a1628]/5 px-3 py-1 text-xs text-[#0a1628]/50"
+                        className="rounded-full bg-[#0a1628]/5 dark:bg-white/[0.04] px-3 py-1 text-xs text-[#0a1628]/50 dark:text-white/45"
                       >
                         {tag}
                       </span>
                     ))}
                 </div>
 
-                <h1 className="font-serif text-4xl font-bold leading-tight text-[#0a1628] sm:text-5xl">
+                <h1 className="font-serif text-4xl font-bold leading-tight text-[#0a1628] dark:text-white sm:text-5xl">
                   {article.title}
                 </h1>
 
-                <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 pb-6 border-b border-[#0a1628]/10">
+                <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 pb-6 border-b border-[#0a1628]/10 dark:border-white/10">
                   {article.authorName && (
                     article.authorSlug ? (
                       <Link
                         href={`/author/${article.authorSlug}`}
-                        className="font-medium text-[#0a1628] hover:text-[#c9a84c] transition-colors"
+                        className="font-medium text-[#0a1628] dark:text-white/90 hover:text-[#c9a84c] transition-colors"
                       >
                         {article.authorName}
                       </Link>
                     ) : (
-                      <span className="font-medium text-[#0a1628]">{article.authorName}</span>
+                      <span className="font-medium text-[#0a1628] dark:text-white/90">{article.authorName}</span>
                     )
                   )}
                   {article.publishedAt && (
-                    <span className="text-sm text-[#0a1628]/55">{formatDate(article.publishedAt)}</span>
+                    <span className="text-sm text-[#0a1628]/55 dark:text-white/50">{formatDate(article.publishedAt)}</span>
                   )}
-                  <span className="flex items-center gap-1.5 text-sm text-[#0a1628]/40">
+                  <span className="flex items-center gap-1.5 text-sm text-[#0a1628]/40 dark:text-white/35">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <circle cx="12" cy="12" r="10" />
                       <polyline points="12 6 12 12 16 14" />
@@ -420,7 +421,7 @@ export default async function ArticlePage({
                 )}
 
                 {/* Share */}
-                <div className="mt-12 pt-8 border-t border-[#0a1628]/10">
+                <div className="mt-12 pt-8 border-t border-[#0a1628]/10 dark:border-white/10">
                   <ShareButtons url={articleUrl} title={article.title ?? 'Article'} />
                 </div>
               </article>
@@ -437,10 +438,10 @@ export default async function ArticlePage({
 
         {/* Related articles */}
         {Array.isArray(relatedPosts) && relatedPosts.length > 0 && (
-          <section className="border-t border-[#0a1628]/10 bg-[#0a1628]/[0.02]">
+          <section className="border-t border-[#0a1628]/10 dark:border-white/10 bg-[#0a1628]/[0.02] dark:bg-white/[0.03]">
             <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
               <FadeIn>
-                <h2 className="font-serif text-2xl font-bold text-[#0a1628] sm:text-3xl">
+                <h2 className="font-serif text-2xl font-bold text-[#0a1628] dark:text-white sm:text-3xl">
                   Related Articles
                 </h2>
               </FadeIn>
@@ -448,8 +449,8 @@ export default async function ArticlePage({
                 {relatedPosts.map((post: Record<string, unknown>) => (
                   <FadeInItem key={String(post._id)}>
                     <Link href={post.slug ? `/article/${post.slug}` : '#'} className="block group h-full">
-                      <article className="h-full overflow-hidden rounded-xl border border-[#0a1628]/10 bg-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-                        <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#0a1628]/5">
+                      <article className="h-full overflow-hidden rounded-xl border border-[#0a1628]/10 dark:border-white/8 bg-white dark:bg-[#122035] transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                        <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#0a1628]/5 dark:bg-white/5">
                           {post.mainImage ? (
                             <Image
                               src={urlFor(post.mainImage).width(600).height(340).url()}
@@ -459,7 +460,7 @@ export default async function ArticlePage({
                               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                             />
                           ) : (
-                            <div className="absolute inset-0 flex items-center justify-center text-[#0a1628]/20 font-serif">
+                            <div className="absolute inset-0 flex items-center justify-center text-[#0a1628]/20 dark:text-white/15 font-serif">
                               No image
                             </div>
                           )}
@@ -468,15 +469,15 @@ export default async function ArticlePage({
                           </span>
                         </div>
                         <div className="p-5">
-                          <h3 className="font-serif text-xl font-semibold leading-snug text-[#0a1628] line-clamp-2 group-hover:text-[#c9a84c] transition-colors duration-200">
+                          <h3 className="font-serif text-xl font-semibold leading-snug text-[#0a1628] dark:text-white/90 line-clamp-2 group-hover:text-[#c9a84c] transition-colors duration-200">
                             {String(post.title ?? '')}
                           </h3>
                           {post.excerpt ? (
-                            <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-[#0a1628]/65">
+                            <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-[#0a1628]/65 dark:text-white/60">
                               {String(post.excerpt)}
                             </p>
                           ) : null}
-                          <div className="mt-4 flex flex-wrap items-center gap-x-3 text-xs text-[#0a1628]/50">
+                          <div className="mt-4 flex flex-wrap items-center gap-x-3 text-xs text-[#0a1628]/50 dark:text-white/45">
                             {post.authorName ? <span>{String(post.authorName)}</span> : null}
                             {post.publishedAt ? <span>{formatDate(post.publishedAt as string)}</span> : null}
                           </div>
@@ -491,6 +492,7 @@ export default async function ArticlePage({
         )}
       </main>
 
+      <NewsletterSignup />
       <Footer />
     </div>
   )

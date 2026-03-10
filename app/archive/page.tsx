@@ -66,23 +66,23 @@ export default async function ArchivePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-[#0c1827] transition-colors duration-200">
       <Navbar />
 
       <main>
         <FadeIn>
-          <section className="border-b border-[#0a1628]/10 bg-[#0a1628]/[0.02]">
+          <section className="border-b border-[#0a1628]/10 dark:border-white/10 bg-[#0a1628]/[0.02] dark:bg-white/[0.03]">
             <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
               <Link
                 href="/"
-                className="inline-flex items-center gap-2 text-sm font-medium text-[#0a1628]/60 hover:text-[#c9a84c] transition-colors"
+                className="inline-flex items-center gap-2 text-sm font-medium text-[#0a1628]/60 dark:text-white/50 hover:text-[#c9a84c] transition-colors"
               >
                 <span aria-hidden>←</span> Home
               </Link>
-              <h1 className="mt-4 font-serif text-3xl font-bold text-[#0a1628] sm:text-4xl">
+              <h1 className="mt-4 font-serif text-3xl font-bold text-[#0a1628] dark:text-white sm:text-4xl">
                 All Articles
               </h1>
-              <p className="mt-1 text-sm text-[#0a1628]/60">
+              <p className="mt-1 text-sm text-[#0a1628]/60 dark:text-white/50">
                 {allPosts.length} article{allPosts.length !== 1 ? 's' : ''} published
               </p>
 
@@ -92,11 +92,11 @@ export default async function ArchivePage() {
                   <Link
                     key={value}
                     href={CATEGORY_HREFS[value] ?? '#'}
-                    className="rounded-full border border-[#0a1628]/20 px-4 py-1.5 text-sm font-medium text-[#0a1628] transition-colors hover:border-[#c9a84c] hover:bg-[#c9a84c] hover:text-[#0a1628]"
+                    className="rounded-full border border-[#0a1628]/20 dark:border-white/15 px-4 py-1.5 text-sm font-medium text-[#0a1628] dark:text-white/90 transition-colors hover:border-[#c9a84c] hover:bg-[#c9a84c] hover:text-[#0a1628]"
                   >
                     {label}
                     {counts[value] ? (
-                      <span className="ml-1.5 text-xs text-[#0a1628]/50">
+                      <span className="ml-1.5 text-xs text-[#0a1628]/50 dark:text-white/45">
                         {counts[value]}
                       </span>
                     ) : null}
@@ -114,8 +114,8 @@ export default async function ArchivePage() {
                 <FadeInItem key={String(post._id)}>
                   <div className="group h-full">
                     <Link href={post.slug ? `/article/${post.slug}` : '#'} className="block h-full">
-                      <article className="h-full overflow-hidden rounded-lg border border-[#0a1628]/10 bg-white transition-shadow hover:shadow-lg">
-                        <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#0a1628]/5">
+                      <article className="h-full overflow-hidden rounded-lg border border-[#0a1628]/10 dark:border-white/8 bg-white dark:bg-[#122035] transition-shadow hover:shadow-lg">
+                        <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#0a1628]/5 dark:bg-white/5">
                           {post.mainImage ? (
                             <Image
                               src={urlFor(post.mainImage).width(600).height(340).url()}
@@ -129,7 +129,7 @@ export default async function ArchivePage() {
                               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                             />
                           ) : (
-                            <div className="absolute inset-0 flex items-center justify-center text-[#0a1628]/20 font-serif">
+                            <div className="absolute inset-0 flex items-center justify-center text-[#0a1628]/20 dark:text-white/15 font-serif">
                               No image
                             </div>
                           )}
@@ -138,11 +138,11 @@ export default async function ArchivePage() {
                           </span>
                         </div>
                         <div className="p-5">
-                          <h2 className="font-serif text-xl font-semibold leading-snug text-[#0a1628] line-clamp-2">
+                          <h2 className="font-serif text-xl font-semibold leading-snug text-[#0a1628] dark:text-white/90 line-clamp-2">
                             {String(post.title ?? '')}
                           </h2>
                           {post.excerpt ? (
-                            <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-[#0a1628]/75">
+                            <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-[#0a1628]/75 dark:text-white/60">
                               {String(post.excerpt)}
                             </p>
                           ) : null}
@@ -151,14 +151,14 @@ export default async function ArchivePage() {
                               {(post.tags as string[]).slice(0, 3).map((tag) => (
                                 <span
                                   key={tag}
-                                  className="rounded-full bg-[#0a1628]/5 px-2.5 py-0.5 text-xs text-[#0a1628]/60"
+                                  className="rounded-full bg-[#0a1628]/5 dark:bg-white/[0.04] px-2.5 py-0.5 text-xs text-[#0a1628]/60 dark:text-white/50"
                                 >
                                   {tag}
                                 </span>
                               ))}
                             </div>
                           )}
-                          <div className="mt-4 flex flex-wrap items-center gap-x-3 text-xs text-[#0a1628]/60">
+                          <div className="mt-4 flex flex-wrap items-center gap-x-3 text-xs text-[#0a1628]/60 dark:text-white/50">
                             {post.authorName ? <span>{String(post.authorName)}</span> : null}
                             {post.publishedAt ? (
                               <span>{formatDate(post.publishedAt as string)}</span>
@@ -172,7 +172,7 @@ export default async function ArchivePage() {
               ))}
             </FadeInStagger>
           ) : (
-            <p className="text-[#0a1628]/60">No articles published yet.</p>
+            <p className="text-[#0a1628]/60 dark:text-white/50">No articles published yet.</p>
           )}
         </section>
       </main>

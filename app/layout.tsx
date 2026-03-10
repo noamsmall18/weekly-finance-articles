@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Lora } from "next/font/google";
+import Script from "next/script";
 import { getBaseUrl } from "@/lib/site";
+import { Providers } from "./providers";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -22,7 +24,7 @@ export const metadata: Metadata = {
     template: "%s | Next Gen Finance",
   },
   description:
-    "Financial literacy for the next generation — clear, well-researched coverage of markets, business, and the economy, written by passionate young journalists.",
+    "Financial literacy for the next generation. Clear, thoroughly researched coverage of markets, business, and the economy.",
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -30,15 +32,17 @@ export const metadata: Metadata = {
     siteName: "Next Gen Finance",
     title: "Next Gen Finance",
     description:
-      "Financial literacy for the next generation — clear, well-researched coverage of markets, business, and the economy.",
+      "Financial literacy for the next generation. Clear, thoroughly researched coverage of markets, business, and the economy.",
   },
   twitter: {
     card: "summary_large_image",
     title: "Next Gen Finance",
     description:
-      "Financial literacy for the next generation — clear, well-researched coverage of markets, business, and the economy.",
+      "Financial literacy for the next generation. Clear, thoroughly researched coverage of markets, business, and the economy.",
   },
 };
+
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
 export default function RootLayout({
   children,
@@ -46,11 +50,27 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${lora.variable} antialiased font-sans`}
       >
-        {children}
+        {GA_ID && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="ga-init" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${GA_ID}');
+              `}
+            </Script>
+          </>
+        )}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

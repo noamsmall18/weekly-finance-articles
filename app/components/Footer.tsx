@@ -11,7 +11,7 @@ const FOOTER_LINKS = [
 
 export function Footer() {
   return (
-    <footer className="border-t border-[#0a1628]/10 bg-[#0a1628] text-white">
+    <footer className="border-t border-[#0a1628]/10 dark:border-white/10 bg-[#0a1628] dark:bg-[#060e18] text-white">
       <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-10 sm:flex-row sm:items-start sm:justify-between">
           <div className="max-w-sm">
@@ -19,7 +19,7 @@ export function Footer() {
               Next Gen Finance
             </Link>
             <p className="mt-3 text-sm text-white/60 leading-relaxed">
-              Financial literacy for the next generation. Clear, well-researched coverage of markets, business, and the economy — written by passionate young journalists.
+              Financial literacy for the next generation. Thoroughly researched, clearly written coverage of markets, business, and the economy.
             </p>
           </div>
 
@@ -29,7 +29,7 @@ export function Footer() {
               <ul className="space-y-2.5 text-sm">
                 {FOOTER_LINKS.map(({ label, href }) => (
                   <li key={href}>
-                    <Link href={href} className="text-white/65 transition-colors hover:text-[#c9a84c]">
+                    <Link href={href} className="text-white/60 transition-colors hover:text-[#c9a84c]">
                       {label}
                     </Link>
                   </li>
@@ -45,7 +45,7 @@ export function Footer() {
                   { label: 'About Us', href: '/#about' },
                 ].map(({ label, href }) => (
                   <li key={href}>
-                    <Link href={href} className="text-white/65 transition-colors hover:text-[#c9a84c]">
+                    <Link href={href} className="text-white/60 transition-colors hover:text-[#c9a84c]">
                       {label}
                     </Link>
                   </li>
@@ -55,12 +55,17 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 border-t border-white/10 pt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <p className="text-xs text-white/35">
-            © {new Date().getFullYear()} Next Gen Finance. All rights reserved.
-          </p>
-          <p className="text-xs text-white/25 font-serif italic">
-            Empowering the next generation of investors.
+        <div className="mt-12 border-t border-white/10 pt-6 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <p className="text-xs text-white/35">
+              &copy; {new Date().getFullYear()} Next Gen Finance. All rights reserved.
+            </p>
+            <p className="text-xs text-white/25 font-serif italic">
+              Empowering the next generation of investors.
+            </p>
+          </div>
+          <p className="text-xs text-white/25 leading-relaxed max-w-3xl">
+            Disclaimer: The content published on this site is for informational and educational purposes only. Nothing here constitutes financial advice, investment advice, or any recommendation to buy or sell any security or financial instrument. Always consult a qualified financial professional before making investment decisions.
           </p>
         </div>
       </div>

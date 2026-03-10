@@ -61,7 +61,7 @@ export function SearchClient({ posts }: { posts: Post[] }) {
     <>
       {/* Search input */}
       <div className="relative mt-6">
-        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#0a1628]/40">
+        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#0a1628]/40 dark:text-white/35">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="11" cy="11" r="8" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -73,11 +73,11 @@ export function SearchClient({ posts }: { posts: Post[] }) {
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search articles, topics, authors…"
           autoFocus
-          className="w-full rounded-xl border border-[#0a1628]/20 bg-white py-3.5 pl-11 pr-4 text-base text-[#0a1628] placeholder:text-[#0a1628]/40 outline-none focus:border-[#c9a84c] focus:ring-2 focus:ring-[#c9a84c]/20 transition"
+          className="w-full rounded-xl border border-[#0a1628]/20 dark:border-white/15 bg-white dark:bg-white/5 py-3.5 pl-11 pr-4 text-base text-[#0a1628] dark:text-white placeholder:text-[#0a1628]/40 dark:placeholder:text-white/30 outline-none focus:border-[#c9a84c] focus:ring-2 focus:ring-[#c9a84c]/20 transition"
         />
       </div>
 
-      <p className="mt-4 text-sm text-[#0a1628]/50">
+      <p className="mt-4 text-sm text-[#0a1628]/50 dark:text-white/45">
         {query.trim()
           ? `${results.length} result${results.length !== 1 ? 's' : ''} for "${query}"`
           : `${posts.length} articles total`}
@@ -101,8 +101,8 @@ export function SearchClient({ posts }: { posts: Post[] }) {
                   className="group"
                 >
                   <Link href={post.slug ? `/article/${post.slug}` : '#'} className="block">
-                    <article className="overflow-hidden rounded-lg border border-[#0a1628]/10 bg-white transition-shadow hover:shadow-lg">
-                      <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#0a1628]/5">
+                    <article className="overflow-hidden rounded-lg border border-[#0a1628]/10 dark:border-white/8 bg-white dark:bg-[#122035] transition-shadow hover:shadow-lg">
+                      <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#0a1628]/5 dark:bg-white/5">
                         {post.mainImage ? (
                           <Image
                             src={urlFor(post.mainImage).width(600).height(340).url()}
@@ -112,7 +112,7 @@ export function SearchClient({ posts }: { posts: Post[] }) {
                             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                           />
                         ) : (
-                          <div className="absolute inset-0 flex items-center justify-center text-[#0a1628]/20 font-serif">
+                          <div className="absolute inset-0 flex items-center justify-center text-[#0a1628]/20 dark:text-white/15 font-serif">
                             No image
                           </div>
                         )}
@@ -121,15 +121,15 @@ export function SearchClient({ posts }: { posts: Post[] }) {
                         </span>
                       </div>
                       <div className="p-5">
-                        <h2 className="font-serif text-xl font-semibold leading-snug text-[#0a1628] line-clamp-2">
+                        <h2 className="font-serif text-xl font-semibold leading-snug text-[#0a1628] dark:text-white/90 line-clamp-2">
                           {post.title ?? ''}
                         </h2>
                         {post.excerpt ? (
-                          <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-[#0a1628]/75">
+                          <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-[#0a1628]/75 dark:text-white/60">
                             {post.excerpt}
                           </p>
                         ) : null}
-                        <div className="mt-4 flex flex-wrap items-center gap-x-3 text-xs text-[#0a1628]/60">
+                        <div className="mt-4 flex flex-wrap items-center gap-x-3 text-xs text-[#0a1628]/60 dark:text-white/50">
                           {post.authorName && <span>{post.authorName}</span>}
                           {post.publishedAt && <span>{formatDate(post.publishedAt)}</span>}
                         </div>
@@ -144,7 +144,7 @@ export function SearchClient({ posts }: { posts: Post[] }) {
               key="empty"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-[#0a1628]/60"
+              className="text-[#0a1628]/60 dark:text-white/50"
             >
               No articles found for &ldquo;{query}&rdquo;.
             </motion.p>

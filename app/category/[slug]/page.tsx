@@ -78,23 +78,23 @@ export default async function CategoryPage({
   const count = Array.isArray(posts) ? posts.length : 0
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-[#0c1827] transition-colors duration-200">
       <Navbar />
 
       <main>
         <FadeIn>
-          <section className="border-b border-[#0a1628]/10 bg-[#0a1628]/[0.02]">
+          <section className="border-b border-[#0a1628]/10 dark:border-white/10 bg-[#0a1628]/[0.02] dark:bg-white/[0.03]">
             <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
               <Link
                 href="/"
-                className="inline-flex items-center gap-2 text-sm font-medium text-[#0a1628]/60 hover:text-[#c9a84c] transition-colors"
+                className="inline-flex items-center gap-2 text-sm font-medium text-[#0a1628]/60 dark:text-white/50 hover:text-[#c9a84c] transition-colors"
               >
                 <span aria-hidden>←</span> Home
               </Link>
-              <h1 className="mt-4 font-serif text-3xl font-bold text-[#0a1628] sm:text-4xl">
+              <h1 className="mt-4 font-serif text-3xl font-bold text-[#0a1628] dark:text-white sm:text-4xl">
                 {label}
               </h1>
-              <p className="mt-1 text-sm text-[#0a1628]/60">
+              <p className="mt-1 text-sm text-[#0a1628]/60 dark:text-white/50">
                 {count} article{count !== 1 ? 's' : ''}
               </p>
             </div>
@@ -108,8 +108,8 @@ export default async function CategoryPage({
                 <FadeInItem key={String(post._id)}>
                   <div className="group h-full">
                     <Link href={post.slug ? `/article/${post.slug}` : '#'} className="block h-full">
-                      <article className="h-full overflow-hidden rounded-xl border border-[#0a1628]/10 bg-white transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5">
-                        <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#0a1628]/5">
+                      <article className="h-full overflow-hidden rounded-xl border border-[#0a1628]/10 dark:border-white/8 bg-white dark:bg-[#122035] transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5">
+                        <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#0a1628]/5 dark:bg-white/5">
                           {post.mainImage ? (
                             <Image
                               src={urlFor(post.mainImage).width(600).height(340).url()}
@@ -123,17 +123,17 @@ export default async function CategoryPage({
                               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                             />
                           ) : (
-                            <div className="absolute inset-0 flex items-center justify-center text-[#0a1628]/20 font-serif">
+                            <div className="absolute inset-0 flex items-center justify-center text-[#0a1628]/20 dark:text-white/15 font-serif">
                               No image
                             </div>
                           )}
                         </div>
                         <div className="p-5">
-                          <h2 className="font-serif text-xl font-semibold leading-snug text-[#0a1628] line-clamp-2">
+                          <h2 className="font-serif text-xl font-semibold leading-snug text-[#0a1628] dark:text-white/90 line-clamp-2">
                             {String(post.title ?? '')}
                           </h2>
                           {post.excerpt ? (
-                            <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-[#0a1628]/75">
+                            <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-[#0a1628]/75 dark:text-white/60">
                               {String(post.excerpt)}
                             </p>
                           ) : null}
@@ -142,14 +142,14 @@ export default async function CategoryPage({
                               {(post.tags as string[]).slice(0, 3).map((tag) => (
                                 <span
                                   key={tag}
-                                  className="rounded-full bg-[#0a1628]/5 px-2.5 py-0.5 text-xs text-[#0a1628]/55"
+                                  className="rounded-full bg-[#0a1628]/5 dark:bg-white/[0.04] px-2.5 py-0.5 text-xs text-[#0a1628]/55 dark:text-white/50"
                                 >
                                   {tag}
                                 </span>
                               ))}
                             </div>
                           )}
-                          <div className="mt-4 flex flex-wrap items-center gap-x-3 text-xs text-[#0a1628]/60">
+                          <div className="mt-4 flex flex-wrap items-center gap-x-3 text-xs text-[#0a1628]/60 dark:text-white/50">
                             {post.authorName ? <span>{String(post.authorName)}</span> : null}
                             {post.publishedAt ? (
                               <span>{formatDate(post.publishedAt as string)}</span>
@@ -163,7 +163,7 @@ export default async function CategoryPage({
               ))}
             </FadeInStagger>
           ) : (
-            <p className="text-[#0a1628]/60">No articles in this category yet.</p>
+            <p className="text-[#0a1628]/60 dark:text-white/50">No articles in this category yet.</p>
           )}
         </section>
       </main>

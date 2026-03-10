@@ -37,10 +37,10 @@ export function TableOfContents({ headings }: { headings: TocHeading[] }) {
 
   return (
     <nav aria-label="Table of contents" className="sticky top-24">
-      <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#0a1628]/40 mb-4">
+      <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#0a1628]/40 dark:text-white/35 mb-4">
         Contents
       </p>
-      <ul className="space-y-1 border-l border-[#0a1628]/10">
+      <ul className="space-y-1 border-l border-[#0a1628]/10 dark:border-white/10">
         {headings.map(({ id, text, level }) => (
           <li key={id}>
             <a
@@ -54,7 +54,7 @@ export function TableOfContents({ headings }: { headings: TocHeading[] }) {
                 level === 'h3' ? 'pl-6' : 'pl-4',
                 activeId === id
                   ? 'text-[#c9a84c] font-semibold border-l-2 border-[#c9a84c] -ml-px'
-                  : 'text-[#0a1628]/55 hover:text-[#0a1628]',
+                  : 'text-[#0a1628]/55 dark:text-white/50 hover:text-[#0a1628] dark:hover:text-white/80',
               ].join(' ')}
             >
               {text}
