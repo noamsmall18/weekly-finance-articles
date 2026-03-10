@@ -12,6 +12,7 @@ interface MarketData {
   dow: MarketItem | null
   nasdaq: MarketItem | null
   btc: MarketItem | null
+  marketOpen: boolean
   timestamp: number
 }
 
@@ -68,7 +69,7 @@ export function MarketBar() {
       const res = await fetch('/api/market-data')
       if (res.ok) setData(await res.json())
     } catch {
-      // silently fail — bar just won't show
+      // silently fail
     } finally {
       setLoading(false)
     }
@@ -76,32 +77,39 @@ export function MarketBar() {
 
   useEffect(() => {
     load()
-    const interval = setInterval(load, 60_000)
+    const interval = setInterval(load, 30_000)
     return () => clearInterval(interval)
   }, [])
 
-  // Don't render if all data failed
-  if (!loading && !data?.sp500 && !data?.dow && !data?.nasdaq && !data?.btc) return null
+  const hasAnyData = data?.sp500 || data?.dow || data?.nasdaq || data?.btc
+  if (!loading && !hasAnyData) return null
+
+  const marketOpen = data?.marketOpen ?? false
 
   return (
     <div className="border-b border-[#0a1628]/8 dark:border-white/8 overflow-x-auto scrollbar-none">
       <div className="flex items-center min-w-max mx-auto px-2 py-1.5">
-        {/* Live indicator */}
+
+        {/* Market status indicator */}
         <span className="flex-shrink-0 flex items-center gap-1.5 pl-2 pr-3">
           <span className="relative flex h-1.5 w-1.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-60" />
-            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            {marketOpen ? (
+              <>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-60" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              </>
+            ) : (
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#0a1628]/25 dark:bg-white/25" />
+            )}
           </span>
           <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#0a1628]/35 dark:text-white/30">
-            Live
+            {marketOpen ? 'Live' : 'Closed'}
           </span>
         </span>
 
-        {/* Divider */}
         <span className="text-[#0a1628]/12 dark:text-white/12 text-xs select-none">|</span>
 
         {loading ? (
-          // Skeleton while loading
           <span className="flex items-center gap-6 px-4">
             {['S&P 500', 'DOW', 'NASDAQ', 'BTC'].map((label) => (
               <span key={label} className="flex items-center gap-2">
@@ -133,16 +141,6 @@ export function MarketBar() {
                 <Ticker label="BTC" item={data.btc} isCrypto />
               </>
             )}
-          </>
-        )}
-
-        {/* Delay note */}
-        {!loading && (
-          <>
-            <span className="text-[#0a1628]/12 dark:text-white/12 text-xs select-none ml-2">|</span>
-            <span className="text-[9px] text-[#0a1628]/25 dark:text-white/20 pl-3 pr-2 whitespace-nowrap">
-              15 min delay
-            </span>
           </>
         )}
       </div>
