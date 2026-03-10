@@ -28,7 +28,7 @@ function formatChange(pct: number): string {
   return `${sign}${pct.toFixed(2)}%`
 }
 
-const SPEED = 55 // pixels per second
+const SPEED = 55 // px/s
 
 export function MarketBar() {
   const [marketData, setMarketData] = useState<MarketData | null>(null)
@@ -37,22 +37,25 @@ export function MarketBar() {
   const rafRef = useRef<number>(0)
   const lastTimeRef = useRef<number | null>(null)
 
-  // Fetch market data, keep scroll position stable across updates
-  async function load() {
-    try {
-      const res = await fetch('/api/market-data')
-      if (res.ok) setMarketData(await res.json())
-    } catch { /* silently fail */ }
-  }
-
   useEffect(() => {
+    async function load() {
+      try {
+        const res = await fetch('/api/market-data')
+        if (res.ok) setMarketData(await res.json())
+      } catch { /* silently fail */ }
+    }
     load()
     const id = setInterval(load, 30_000)
     return () => clearInterval(id)
   }, [])
 
-  // RAF-based scroll — runs independently of data fetches
+  // Start RAF only once items are loaded and the DOM element exists.
+  // hasItems flips true once, RAF starts, and never restarts — data
+  // updates go straight to the DOM via the ref without touching the RAF.
+  const hasItems = (marketData?.items.length ?? 0) > 0
+
   useEffect(() => {
+    if (!hasItems) return
     const track = trackRef.current
     if (!track) return
 
@@ -61,15 +64,11 @@ export function MarketBar() {
       const delta = (now - lastTimeRef.current) / 1000
       lastTimeRef.current = now
 
-      if (track) {
-        const loopWidth = track.scrollWidth / 2
-        if (loopWidth > 0) {
-          posRef.current += SPEED * delta
-          if (posRef.current >= loopWidth) {
-            posRef.current -= loopWidth
-          }
-          track.style.transform = `translateX(-${posRef.current}px)`
-        }
+      const loopWidth = track!.scrollWidth / 2
+      if (loopWidth > 0) {
+        posRef.current += SPEED * delta
+        if (posRef.current >= loopWidth) posRef.current -= loopWidth
+        track!.style.transform = `translateX(-${posRef.current}px)`
       }
 
       rafRef.current = requestAnimationFrame(tick)
@@ -77,7 +76,7 @@ export function MarketBar() {
 
     rafRef.current = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(rafRef.current)
-  }, []) // runs once — never restarts, never resets
+  }, [hasItems]) // only fires once: when items go from 0 → n
 
   if (!marketData || marketData.items.length === 0) return null
 
@@ -88,7 +87,7 @@ export function MarketBar() {
     <div className="border-b border-[#0a1628]/8 dark:border-white/8 bg-white dark:bg-[#0c1827] overflow-hidden">
       <div className="relative flex items-center h-8">
 
-        {/* Static label on the left */}
+        {/* Static label */}
         <div className="relative z-10 flex-shrink-0 flex items-center gap-2 pl-4 pr-2 h-full bg-white dark:bg-[#0c1827]">
           <span className="relative flex h-1.5 w-1.5 flex-shrink-0">
             {marketOpen ? (
@@ -103,13 +102,12 @@ export function MarketBar() {
           <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-[#0a1628]/40 dark:text-white/35 whitespace-nowrap pr-2">
             {marketOpen ? 'Markets' : 'Closed'}
           </span>
-          {/* Gradient fade from label into scrolling area */}
           <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white dark:from-[#0c1827] to-transparent pointer-events-none" />
         </div>
 
-        {/* Scrolling track — JS-controlled, never CSS-animated */}
+        {/* Scrolling track */}
         <div className="flex-1 overflow-hidden ticker-mask">
-          <div ref={trackRef} className="flex items-center whitespace-nowrap will-change-transform">
+          <div ref={trackRef} className="inline-flex items-center whitespace-nowrap will-change-transform">
             {items.map((item, i) => {
               const isUp = item.changePercent >= 0
               return (
