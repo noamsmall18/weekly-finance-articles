@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Lora } from "next/font/google";
 import Script from "next/script";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { getBaseUrl } from "@/lib/site";
 import { Providers } from "./providers";
 import "./globals.css";
@@ -71,6 +72,7 @@ export default function RootLayout({
           </>
         )}
         <Providers>{children}</Providers>
+        <SpeedInsights />
       </body>
     </html>
   );
