@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { ContactButton } from './ContactButton'
 
 const FOOTER_LINKS = [
   { label: 'Markets', href: '/category/markets' },
@@ -51,6 +52,9 @@ export function Footer() {
                     </Link>
                   </li>
                 ))}
+                <li>
+                  <ContactButton />
+                </li>
               </ul>
             </nav>
           </div>
