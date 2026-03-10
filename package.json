@@ -12,6 +12,7 @@
     "@sanity/icons": "^3.7.4",
     "@sanity/image-url": "^1.2.0",
     "@sanity/vision": "^4.22.0",
+    "@vercel/analytics": "^1.6.1",
     "framer-motion": "^12.35.2",
     "next": "16.1.6",
     "next-sanity": "^11.6.12",
