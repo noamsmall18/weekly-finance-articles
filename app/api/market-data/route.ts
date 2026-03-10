@@ -4,26 +4,11 @@ export interface MarketItem {
   label: string
   price: number
   changePercent: number
-  prefix?: string   // '$' for currencies/crypto, undefined for index points
-  decimals?: number // how many decimal places to show
+  prefix?: string
+  decimals?: number
 }
 
-const FINNHUB_TOKEN = process.env.FINNHUB_API_KEY
-
-// Finnhub for US indices (real-time, free tier)
-async function fetchFinnhub(label: string, symbol: string, opts?: Partial<MarketItem>): Promise<MarketItem> {
-  if (!FINNHUB_TOKEN) throw new Error('No Finnhub key')
-  const res = await fetch(
-    `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}&token=${FINNHUB_TOKEN}`,
-    { next: { revalidate: 30 } },
-  )
-  if (!res.ok) throw new Error(`Finnhub ${symbol} ${res.status}`)
-  const d = await res.json()
-  if (!d.c || d.c === 0) throw new Error(`No data for ${symbol}`)
-  return { label, price: d.c as number, changePercent: d.dp as number, ...opts }
-}
-
-// Yahoo Finance for commodity futures (no API key needed)
+// Yahoo Finance — free, no key, works for indices + commodities
 async function fetchYahoo(label: string, symbol: string, opts?: Partial<MarketItem>): Promise<MarketItem> {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=1d`
   const res = await fetch(url, {
@@ -40,7 +25,30 @@ async function fetchYahoo(label: string, symbol: string, opts?: Partial<MarketIt
   return { label, price, changePercent, ...opts }
 }
 
-// CoinGecko for crypto (no API key needed)
+// Finnhub — real-time, requires API key (falls back to Yahoo if key missing)
+async function fetchFinnhub(label: string, symbol: string, yahooSymbol: string, opts?: Partial<MarketItem>): Promise<MarketItem> {
+  const token = process.env.FINNHUB_API_KEY
+  if (token) {
+    try {
+      const res = await fetch(
+        `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}&token=${token}`,
+        { next: { revalidate: 30 } },
+      )
+      if (res.ok) {
+        const d = await res.json()
+        if (d.c && d.c !== 0) {
+          return { label, price: d.c as number, changePercent: d.dp as number, ...opts }
+        }
+      }
+    } catch {
+      // fall through to Yahoo
+    }
+  }
+  // Fallback: Yahoo Finance
+  return fetchYahoo(label, yahooSymbol, opts)
+}
+
+// CoinGecko — free, no key needed
 async function fetchBTC(): Promise<MarketItem> {
   const res = await fetch(
     'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true',
@@ -68,13 +76,13 @@ function isMarketOpen(): boolean {
 
 export async function GET() {
   const results = await Promise.allSettled([
-    fetchFinnhub('S&P 500', '^GSPC', { decimals: 2 }),
-    fetchFinnhub('DOW', '^DJI', { decimals: 2 }),
-    fetchFinnhub('NASDAQ', '^IXIC', { decimals: 2 }),
-    fetchFinnhub('RUSSELL 2000', '^RUT', { decimals: 2 }),
-    fetchYahoo('GOLD', 'GC=F', { prefix: '$', decimals: 2 }),
-    fetchYahoo('SILVER', 'SI=F', { prefix: '$', decimals: 2 }),
-    fetchYahoo('OIL (WTI)', 'CL=F', { prefix: '$', decimals: 2 }),
+    fetchFinnhub('S&P 500',      '^GSPC', '^GSPC',  { decimals: 2 }),
+    fetchFinnhub('DOW',          '^DJI',  '^DJI',   { decimals: 2 }),
+    fetchFinnhub('NASDAQ',       '^IXIC', '^IXIC',  { decimals: 2 }),
+    fetchFinnhub('RUSSELL 2000', '^RUT',  '^RUT',   { decimals: 2 }),
+    fetchYahoo('GOLD',     'GC=F', { prefix: '$', decimals: 2 }),
+    fetchYahoo('SILVER',   'SI=F', { prefix: '$', decimals: 2 }),
+    fetchYahoo('OIL (WTI)','CL=F', { prefix: '$', decimals: 2 }),
     fetchBTC(),
   ])
 

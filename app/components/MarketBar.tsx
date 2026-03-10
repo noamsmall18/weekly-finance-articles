@@ -13,7 +13,6 @@ interface MarketItem {
 interface MarketData {
   items: MarketItem[]
   marketOpen: boolean
-  timestamp: number
 }
 
 function formatPrice(item: MarketItem): string {
@@ -29,21 +28,21 @@ function formatChange(pct: number): string {
   return `${sign}${pct.toFixed(2)}%`
 }
 
-export function MarketBar() {
-  const [data, setData] = useState<MarketData | null>(null)
-  // Keep a ref so the interval always reads latest data without re-subscribing
-  const dataRef = useRef<MarketData | null>(null)
+const SPEED = 55 // pixels per second
 
+export function MarketBar() {
+  const [marketData, setMarketData] = useState<MarketData | null>(null)
+  const trackRef = useRef<HTMLDivElement>(null)
+  const posRef = useRef(0)
+  const rafRef = useRef<number>(0)
+  const lastTimeRef = useRef<number | null>(null)
+
+  // Fetch market data, keep scroll position stable across updates
   async function load() {
     try {
       const res = await fetch('/api/market-data')
-      if (!res.ok) return
-      const json: MarketData = await res.json()
-      dataRef.current = json
-      setData(json)
-    } catch {
-      // silently fail — bar just won't update
-    }
+      if (res.ok) setMarketData(await res.json())
+    } catch { /* silently fail */ }
   }
 
   useEffect(() => {
@@ -52,19 +51,45 @@ export function MarketBar() {
     return () => clearInterval(id)
   }, [])
 
-  // Don't render until we have data
-  if (!data || data.items.length === 0) return null
+  // RAF-based scroll — runs independently of data fetches
+  useEffect(() => {
+    const track = trackRef.current
+    if (!track) return
 
-  // Duplicate items for seamless loop
-  const items = [...data.items, ...data.items]
-  const marketOpen = data.marketOpen
+    function tick(now: number) {
+      if (lastTimeRef.current === null) lastTimeRef.current = now
+      const delta = (now - lastTimeRef.current) / 1000
+      lastTimeRef.current = now
+
+      if (track) {
+        const loopWidth = track.scrollWidth / 2
+        if (loopWidth > 0) {
+          posRef.current += SPEED * delta
+          if (posRef.current >= loopWidth) {
+            posRef.current -= loopWidth
+          }
+          track.style.transform = `translateX(-${posRef.current}px)`
+        }
+      }
+
+      rafRef.current = requestAnimationFrame(tick)
+    }
+
+    rafRef.current = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(rafRef.current)
+  }, []) // runs once — never restarts, never resets
+
+  if (!marketData || marketData.items.length === 0) return null
+
+  const items = [...marketData.items, ...marketData.items]
+  const marketOpen = marketData.marketOpen
 
   return (
-    <div className="border-b border-[#0a1628]/8 dark:border-white/8 bg-white dark:bg-[#0c1827]">
+    <div className="border-b border-[#0a1628]/8 dark:border-white/8 bg-white dark:bg-[#0c1827] overflow-hidden">
       <div className="relative flex items-center h-8">
 
-        {/* Static left label — overlaps the scroll */}
-        <div className="relative z-10 flex-shrink-0 flex items-center gap-2 pl-4 pr-4 h-full bg-white dark:bg-[#0c1827]">
+        {/* Static label on the left */}
+        <div className="relative z-10 flex-shrink-0 flex items-center gap-2 pl-4 pr-2 h-full bg-white dark:bg-[#0c1827]">
           <span className="relative flex h-1.5 w-1.5 flex-shrink-0">
             {marketOpen ? (
               <>
@@ -75,16 +100,16 @@ export function MarketBar() {
               <span className="inline-flex h-1.5 w-1.5 rounded-full bg-[#0a1628]/20 dark:bg-white/25" />
             )}
           </span>
-          <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-[#0a1628]/40 dark:text-white/35 whitespace-nowrap">
+          <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-[#0a1628]/40 dark:text-white/35 whitespace-nowrap pr-2">
             {marketOpen ? 'Markets' : 'Closed'}
           </span>
           {/* Gradient fade from label into scrolling area */}
           <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white dark:from-[#0c1827] to-transparent pointer-events-none" />
         </div>
 
-        {/* Scrolling prices */}
-        <div className="overflow-hidden flex-1 ticker-mask">
-          <div className="animate-ticker flex items-center whitespace-nowrap">
+        {/* Scrolling track — JS-controlled, never CSS-animated */}
+        <div className="flex-1 overflow-hidden ticker-mask">
+          <div ref={trackRef} className="flex items-center whitespace-nowrap will-change-transform">
             {items.map((item, i) => {
               const isUp = item.changePercent >= 0
               return (
@@ -101,12 +126,13 @@ export function MarketBar() {
                   ].join(' ')}>
                     {isUp ? '▲' : '▼'} {formatChange(item.changePercent)}
                   </span>
-                  <span className="text-[#0a1628]/12 dark:text-white/12 text-xs select-none ml-2">·</span>
+                  <span className="text-[#0a1628]/15 dark:text-white/15 select-none ml-1">·</span>
                 </span>
               )
             })}
           </div>
         </div>
+
       </div>
     </div>
   )
