@@ -1,29 +1,17 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
 import { sanityFetch, urlFor } from '@/lib/sanity'
 import { Navbar } from '@/app/components/Navbar'
 import { Footer } from '@/app/components/Footer'
 import { FadeIn, FadeInStagger, FadeInItem } from '@/app/components/FadeIn'
 
-const CATEGORY_LABELS: Record<string, string> = {
-  markets: 'Markets',
-  investing: 'Investing',
-  personalFinance: 'Personal Finance',
-  economy: 'Economy',
-  crypto: 'Crypto',
+export const metadata: Metadata = {
+  title: 'All Articles',
+  description: 'Browse every article published on Next Gen Finance.',
 }
 
-const SLUG_TO_CATEGORY: Record<string, string> = {
-  markets: 'markets',
-  investing: 'investing',
-  'personal-finance': 'personalFinance',
-  economy: 'economy',
-  crypto: 'crypto',
-}
-
-const CATEGORY_QUERY = `*[_type == "post" && category == $category] | order(publishedAt desc) {
+const ALL_POSTS_QUERY = `*[_type == "post"] | order(publishedAt desc) {
   _id,
   title,
   "slug": slug.current,
@@ -36,6 +24,14 @@ const CATEGORY_QUERY = `*[_type == "post" && category == $category] | order(publ
   tags
 }`
 
+const CATEGORY_LABELS: Record<string, string> = {
+  markets: 'Markets',
+  investing: 'Investing',
+  personalFinance: 'Personal Finance',
+  economy: 'Economy',
+  crypto: 'Crypto',
+}
+
 function formatDate(dateString: string | null) {
   if (!dateString) return ''
   return new Date(dateString).toLocaleDateString('en-US', {
@@ -45,37 +41,29 @@ function formatDate(dateString: string | null) {
   })
 }
 
-export function generateStaticParams() {
-  return Object.keys(SLUG_TO_CATEGORY).map((slug) => ({ slug }))
+function getCategoryLabel(value: string | null) {
+  if (!value) return 'Finance'
+  return CATEGORY_LABELS[value] ?? value
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>
-}): Promise<Metadata> {
-  const { slug } = await params
-  const category = SLUG_TO_CATEGORY[slug]
-  if (!category) return { title: 'Category not found' }
-  const label = CATEGORY_LABELS[category]
-  return {
-    title: label,
-    description: `Browse all ${label} articles on Next Gen Finance.`,
+const CATEGORY_HREFS: Record<string, string> = {
+  markets: '/category/markets',
+  investing: '/category/investing',
+  personalFinance: '/category/personal-finance',
+  economy: '/category/economy',
+  crypto: '/category/crypto',
+}
+
+export default async function ArchivePage() {
+  const posts = await sanityFetch(ALL_POSTS_QUERY)
+  const allPosts = Array.isArray(posts) ? (posts as Record<string, unknown>[]) : []
+
+  // Group by category for the sidebar count
+  const counts: Record<string, number> = {}
+  for (const p of allPosts) {
+    const cat = (p.category as string) ?? 'other'
+    counts[cat] = (counts[cat] ?? 0) + 1
   }
-}
-
-export default async function CategoryPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>
-}) {
-  const { slug } = await params
-  const category = SLUG_TO_CATEGORY[slug]
-  if (!category) notFound()
-
-  const posts = await sanityFetch(CATEGORY_QUERY, { category })
-  const label = CATEGORY_LABELS[category]
-  const count = Array.isArray(posts) ? posts.length : 0
 
   return (
     <div className="min-h-screen bg-white">
@@ -92,23 +80,41 @@ export default async function CategoryPage({
                 <span aria-hidden>←</span> Home
               </Link>
               <h1 className="mt-4 font-serif text-3xl font-bold text-[#0a1628] sm:text-4xl">
-                {label}
+                All Articles
               </h1>
               <p className="mt-1 text-sm text-[#0a1628]/60">
-                {count} article{count !== 1 ? 's' : ''}
+                {allPosts.length} article{allPosts.length !== 1 ? 's' : ''} published
               </p>
+
+              {/* Category filter pills */}
+              <div className="mt-6 flex flex-wrap gap-2">
+                {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
+                  <Link
+                    key={value}
+                    href={CATEGORY_HREFS[value] ?? '#'}
+                    className="rounded-full border border-[#0a1628]/20 px-4 py-1.5 text-sm font-medium text-[#0a1628] transition-colors hover:border-[#c9a84c] hover:bg-[#c9a84c] hover:text-[#0a1628]"
+                  >
+                    {label}
+                    {counts[value] ? (
+                      <span className="ml-1.5 text-xs text-[#0a1628]/50">
+                        {counts[value]}
+                      </span>
+                    ) : null}
+                  </Link>
+                ))}
+              </div>
             </div>
           </section>
         </FadeIn>
 
         <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-          {Array.isArray(posts) && posts.length > 0 ? (
+          {allPosts.length > 0 ? (
             <FadeInStagger className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-              {(posts as Record<string, unknown>[]).map((post) => (
+              {allPosts.map((post) => (
                 <FadeInItem key={String(post._id)}>
                   <div className="group h-full">
                     <Link href={post.slug ? `/article/${post.slug}` : '#'} className="block h-full">
-                      <article className="h-full overflow-hidden rounded-xl border border-[#0a1628]/10 bg-white transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5">
+                      <article className="h-full overflow-hidden rounded-lg border border-[#0a1628]/10 bg-white transition-shadow hover:shadow-lg">
                         <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#0a1628]/5">
                           {post.mainImage ? (
                             <Image
@@ -119,7 +125,7 @@ export default async function CategoryPage({
                                 'Article'
                               }
                               fill
-                              className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                              className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                             />
                           ) : (
@@ -127,6 +133,9 @@ export default async function CategoryPage({
                               No image
                             </div>
                           )}
+                          <span className="absolute left-3 top-3 rounded px-2 py-1 text-xs font-medium uppercase tracking-wide bg-[#c9a84c] text-[#0a1628]">
+                            {getCategoryLabel(post.category as string)}
+                          </span>
                         </div>
                         <div className="p-5">
                           <h2 className="font-serif text-xl font-semibold leading-snug text-[#0a1628] line-clamp-2">
@@ -137,12 +146,12 @@ export default async function CategoryPage({
                               {String(post.excerpt)}
                             </p>
                           ) : null}
-                          {Array.isArray(post.tags) && (post.tags as string[]).length > 0 && (
+                          {Array.isArray(post.tags) && post.tags.length > 0 && (
                             <div className="mt-3 flex flex-wrap gap-1">
                               {(post.tags as string[]).slice(0, 3).map((tag) => (
                                 <span
                                   key={tag}
-                                  className="rounded-full bg-[#0a1628]/5 px-2.5 py-0.5 text-xs text-[#0a1628]/55"
+                                  className="rounded-full bg-[#0a1628]/5 px-2.5 py-0.5 text-xs text-[#0a1628]/60"
                                 >
                                   {tag}
                                 </span>
@@ -163,7 +172,7 @@ export default async function CategoryPage({
               ))}
             </FadeInStagger>
           ) : (
-            <p className="text-[#0a1628]/60">No articles in this category yet.</p>
+            <p className="text-[#0a1628]/60">No articles published yet.</p>
           )}
         </section>
       </main>

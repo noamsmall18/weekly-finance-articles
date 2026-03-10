@@ -6,6 +6,9 @@ import { sanityFetch, urlFor } from '@/lib/sanity'
 import { getBaseUrl } from '@/lib/site'
 import { Navbar } from '@/app/components/Navbar'
 import { Footer } from '@/app/components/Footer'
+import { ReadingProgressBar } from '@/app/components/ReadingProgressBar'
+import { ShareButtons } from '@/app/components/ShareButtons'
+import { FadeIn, FadeInStagger, FadeInItem } from '@/app/components/FadeIn'
 
 const CATEGORY_LABELS: Record<string, string> = {
   markets: 'Markets',
@@ -26,8 +29,10 @@ const ARTICLE_QUERY = `*[_type == "post" && slug.current == $slug][0] {
   category,
   mainImage,
   "authorName": author->name,
+  "authorSlug": author->slug.current,
   publishedAt,
-  body
+  body,
+  tags
 }`
 
 const RELATED_QUERY = `*[_type == "post" && _id != $id] | order(select(category == $category => 0, 1), publishedAt desc) [0...3] {
@@ -55,7 +60,7 @@ function estimateReadingTime(body: unknown): number {
   const text = body
     .filter((b: { _type?: string }) => b?._type === 'block')
     .flatMap((b: { children?: { text?: string }[] }) =>
-      (b?.children ?? []).map((c) => c?.text ?? '')
+      (b?.children ?? []).map((c) => c?.text ?? ''),
     )
     .join(' ')
   const words = text.split(/\s+/).filter(Boolean).length
@@ -81,7 +86,7 @@ const portableTextComponents = {
     image: ({ value }: { value?: { asset?: unknown; alt?: string } }) => {
       if (!value?.asset) return null
       return (
-        <div className="relative my-8 aspect-video w-full overflow-hidden rounded-lg">
+        <div className="relative my-8 aspect-video w-full overflow-hidden rounded-xl shadow-sm">
           <Image
             src={urlFor(value).width(800).height(450).url()}
             alt={value.alt ?? 'Article image'}
@@ -100,29 +105,41 @@ const portableTextComponents = {
       </h1>
     ),
     h2: (props: { children?: React.ReactNode }) => (
-      <h2 className="mt-8 font-serif text-2xl font-bold text-[#0a1628]">{props.children}</h2>
+      <h2 className="mt-8 font-serif text-2xl font-bold text-[#0a1628]">
+        {props.children}
+      </h2>
     ),
     h3: (props: { children?: React.ReactNode }) => (
-      <h3 className="mt-6 font-serif text-xl font-bold text-[#0a1628]">{props.children}</h3>
+      <h3 className="mt-6 font-serif text-xl font-bold text-[#0a1628]">
+        {props.children}
+      </h3>
     ),
     h4: (props: { children?: React.ReactNode }) => (
-      <h4 className="mt-4 font-serif text-lg font-bold text-[#0a1628]">{props.children}</h4>
+      <h4 className="mt-4 font-serif text-lg font-bold text-[#0a1628]">
+        {props.children}
+      </h4>
     ),
     blockquote: (props: { children?: React.ReactNode }) => (
-      <blockquote className="my-6 border-l-4 border-[#c9a84c] pl-6 italic text-[#0a1628]/80">
+      <blockquote className="my-6 border-l-4 border-[#c9a84c] pl-6 italic text-[#0a1628]/80 text-lg">
         {props.children}
       </blockquote>
     ),
     normal: (props: { children?: React.ReactNode }) => (
-      <p className="mb-4 leading-relaxed text-[#0a1628]/90">{props.children}</p>
+      <p className="mb-5 leading-[1.85] text-[#0a1628]/90 text-[1.05rem]">
+        {props.children}
+      </p>
     ),
   },
   list: {
     bullet: (props: { children?: React.ReactNode }) => (
-      <ul className="mb-4 ml-6 list-disc space-y-2 text-[#0a1628]/90">{props.children}</ul>
+      <ul className="mb-5 ml-6 list-disc space-y-2 text-[#0a1628]/90">
+        {props.children}
+      </ul>
     ),
     number: (props: { children?: React.ReactNode }) => (
-      <ol className="mb-4 ml-6 list-decimal space-y-2 text-[#0a1628]/90">{props.children}</ol>
+      <ol className="mb-5 ml-6 list-decimal space-y-2 text-[#0a1628]/90">
+        {props.children}
+      </ol>
     ),
   },
   listItem: {
@@ -130,7 +147,13 @@ const portableTextComponents = {
     number: (props: { children?: React.ReactNode }) => <li>{props.children}</li>,
   },
   marks: {
-    link: ({ children, value }: { children?: React.ReactNode; value?: { href?: string } }) => (
+    link: ({
+      children,
+      value,
+    }: {
+      children?: React.ReactNode
+      value?: { href?: string }
+    }) => (
       <a
         href={value?.href}
         target="_blank"
@@ -158,16 +181,13 @@ export async function generateMetadata({
   const article = await sanityFetch(ARTICLE_QUERY, { slug })
 
   if (!article) {
-    return {
-      title: 'Article not found',
-    }
+    return { title: 'Article not found' }
   }
 
   const baseUrl = getBaseUrl()
   const title = article.title ?? 'Article'
   const description =
-    (article.excerpt as string) ??
-    'Read this article on Weekly Finance Articles.'
+    (article.excerpt as string) ?? 'Read this article on Next Gen Finance.'
   const imageUrl = article.mainImage
     ? urlFor(article.mainImage).width(1200).height(630).url()
     : undefined
@@ -221,7 +241,10 @@ export default async function ArticlePage({
     )
   }
 
-  const relatedPosts = await sanityFetch(RELATED_QUERY, { id: article._id, category: article.category ?? null })
+  const relatedPosts = await sanityFetch(RELATED_QUERY, {
+    id: article._id,
+    category: article.category ?? null,
+  })
 
   const baseUrl = getBaseUrl()
   const articleUrl = `${baseUrl}/article/${article.slug}`
@@ -238,14 +261,11 @@ export default async function ArticlePage({
     datePublished: article.publishedAt ?? undefined,
     dateModified: (article._updatedAt ?? article.publishedAt) ?? undefined,
     author: article.authorName
-      ? {
-          '@type': 'Person',
-          name: article.authorName,
-        }
+      ? { '@type': 'Person', name: article.authorName }
       : undefined,
     publisher: {
       '@type': 'Organization',
-      name: 'Weekly Finance Articles',
+      name: 'Next Gen Finance',
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
@@ -259,134 +279,171 @@ export default async function ArticlePage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <ReadingProgressBar />
       <Navbar />
 
       <main>
-        {/* Back to Home link */}
+        {/* Back link */}
         <div className="border-b border-[#0a1628]/10">
           <div className="mx-auto max-w-3xl px-4 py-4 sm:px-6 lg:px-8">
             <Link
               href="/"
-              className="inline-flex items-center gap-2 text-sm font-medium text-[#0a1628]/70 transition-colors hover:text-[#c9a84c]"
+              className="inline-flex items-center gap-2 text-sm font-medium text-[#0a1628]/60 transition-colors hover:text-[#c9a84c]"
             >
-              <span aria-hidden>←</span>
-              Back to Home
+              <span aria-hidden>←</span> Back to Home
             </Link>
           </div>
         </div>
 
         {/* Hero image */}
-        <section className="border-b border-[#0a1628]/10">
-          <div className="relative aspect-[21/9] w-full overflow-hidden bg-[#0a1628]/5">
-            {article.mainImage ? (
-              <Image
-                src={urlFor(article.mainImage).width(1200).height(514).url()}
-                alt={article.mainImage?.alt ?? article.title ?? 'Article hero'}
-                fill
-                className="object-cover"
-                sizes="100vw"
-                priority
-              />
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center text-[#0a1628]/20 font-serif text-2xl">
-                No image
-              </div>
-            )}
-          </div>
-        </section>
+        <FadeIn direction="none">
+          <section className="border-b border-[#0a1628]/10">
+            <div className="relative aspect-[21/9] w-full overflow-hidden bg-[#0a1628]/5">
+              {article.mainImage ? (
+                <Image
+                  src={urlFor(article.mainImage).width(1200).height(514).url()}
+                  alt={article.mainImage?.alt ?? article.title ?? 'Article hero'}
+                  fill
+                  className="object-cover"
+                  sizes="100vw"
+                  priority
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center text-[#0a1628]/20 font-serif text-2xl">
+                  No image
+                </div>
+              )}
+            </div>
+          </section>
+        </FadeIn>
 
         {/* Article content */}
-        <article className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-          <h1 className="font-serif text-4xl font-bold leading-tight text-[#0a1628] sm:text-5xl">
-            {article.title}
-          </h1>
-          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
-            {article.authorName && (
-              <span className="text-[#0a1628]/80">{article.authorName}</span>
-            )}
-            {article.publishedAt && (
-              <span className="text-[#0a1628]/70">{formatDate(article.publishedAt)}</span>
-            )}
-            {article.category && (
-              <span className="rounded px-3 py-1 text-xs font-medium uppercase tracking-wide bg-[#c9a84c]/20 text-[#c9a84c]">
-                {getCategoryLabel(article.category)}
-              </span>
-            )}
-          </div>
-
-          {article.body && article.body.length > 0 && (
-            <p className="mt-3 text-sm text-[#0a1628]/50">
-              {estimateReadingTime(article.body)} min read
-            </p>
-          )}
-
-          {article.body && article.body.length > 0 && (
-            <div className="prose prose-lg mt-10 max-w-none">
-              <PortableText value={article.body} components={portableTextComponents as never} />
+        <FadeIn delay={0.05}>
+          <article className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
+            {/* Category + tags */}
+            <div className="flex flex-wrap items-center gap-2 mb-5">
+              {article.category && (
+                <span className="rounded px-3 py-1 text-xs font-semibold uppercase tracking-widest bg-[#c9a84c]/20 text-[#c9a84c]">
+                  {getCategoryLabel(article.category)}
+                </span>
+              )}
+              {Array.isArray(article.tags) && (article.tags as string[]).map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full bg-[#0a1628]/5 px-3 py-1 text-xs text-[#0a1628]/55"
+                >
+                  {tag}
+                </span>
+              ))}
             </div>
-          )}
-        </article>
+
+            <h1 className="font-serif text-4xl font-bold leading-tight text-[#0a1628] sm:text-5xl">
+              {article.title}
+            </h1>
+
+            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+              {article.authorName && (
+                article.authorSlug ? (
+                  <Link
+                    href={`/author/${article.authorSlug}`}
+                    className="text-[#0a1628]/80 hover:text-[#c9a84c] transition-colors font-medium"
+                  >
+                    {article.authorName}
+                  </Link>
+                ) : (
+                  <span className="text-[#0a1628]/80 font-medium">{article.authorName}</span>
+                )
+              )}
+              {article.publishedAt && (
+                <span className="text-[#0a1628]/60">{formatDate(article.publishedAt)}</span>
+              )}
+              {article.body && article.body.length > 0 && (
+                <span className="text-[#0a1628]/45 text-sm">
+                  {estimateReadingTime(article.body)} min read
+                </span>
+              )}
+            </div>
+
+            {article.body && article.body.length > 0 && (
+              <div className="prose prose-lg mt-10 max-w-none">
+                <PortableText
+                  value={article.body}
+                  components={portableTextComponents as never}
+                />
+              </div>
+            )}
+
+            {/* Share buttons */}
+            <div className="mt-10 pt-8 border-t border-[#0a1628]/10">
+              <ShareButtons url={articleUrl} title={article.title ?? 'Article'} />
+            </div>
+          </article>
+        </FadeIn>
 
         {/* Related articles */}
         {Array.isArray(relatedPosts) && relatedPosts.length > 0 && (
           <section className="border-t border-[#0a1628]/10 bg-[#0a1628]/[0.02]">
             <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-              <h2 className="font-serif text-2xl font-bold text-[#0a1628] sm:text-3xl">
-                Related Articles
-              </h2>
-              <ul className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+              <FadeIn>
+                <h2 className="font-serif text-2xl font-bold text-[#0a1628] sm:text-3xl">
+                  Related Articles
+                </h2>
+              </FadeIn>
+              <FadeInStagger className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
                 {relatedPosts.map((post: Record<string, unknown>) => (
-                  <li key={String(post._id)} className="group">
-                    <Link
-                      href={post.slug ? `/article/${post.slug}` : '#'}
-                      className="block"
-                    >
-                      <article className="overflow-hidden rounded-lg border border-[#0a1628]/10 bg-white transition-shadow hover:shadow-lg">
-                        <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#0a1628]/5">
-                          {post.mainImage ? (
-                            <Image
-                              src={urlFor(post.mainImage).width(600).height(340).url()}
-                              alt={
-                                (post.mainImage as { alt?: string })?.alt ??
-                                (post.title as string) ??
-                                'Article'
-                              }
-                              fill
-                              className="object-cover transition-transform group-hover:scale-[1.02]"
-                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                            />
-                          ) : (
-                            <div className="absolute inset-0 flex items-center justify-center text-[#0a1628]/20 font-serif">
-                              No image
-                            </div>
-                          )}
-                          <span className="absolute left-3 top-3 rounded px-2 py-1 text-xs font-medium uppercase tracking-wide bg-[#c9a84c] text-[#0a1628]">
-                            {getCategoryLabel(post.category as string)}
-                          </span>
-                        </div>
-                        <div className="p-5">
-                          <h3 className="font-serif text-xl font-semibold leading-snug text-[#0a1628] line-clamp-2">
-                            {String(post.title ?? '')}
-                          </h3>
-                          {post.excerpt ? (
-                            <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-[#0a1628]/75">
-                              {String(post.excerpt)}
-                            </p>
-                          ) : null}
-                          <div className="mt-4 flex flex-wrap items-center gap-x-3 text-xs text-[#0a1628]/60">
-                            {post.authorName ? (
-                              <span>{String(post.authorName)}</span>
-                            ) : null}
-                            {post.publishedAt ? (
-                              <span>{formatDate(post.publishedAt as string)}</span>
-                            ) : null}
+                  <FadeInItem key={String(post._id)}>
+                    <div className="group h-full">
+                      <Link
+                        href={post.slug ? `/article/${post.slug}` : '#'}
+                        className="block h-full"
+                      >
+                        <article className="h-full overflow-hidden rounded-xl border border-[#0a1628]/10 bg-white transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5">
+                          <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#0a1628]/5">
+                            {post.mainImage ? (
+                              <Image
+                                src={urlFor(post.mainImage).width(600).height(340).url()}
+                                alt={
+                                  (post.mainImage as { alt?: string })?.alt ??
+                                  (post.title as string) ??
+                                  'Article'
+                                }
+                                fill
+                                className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                              />
+                            ) : (
+                              <div className="absolute inset-0 flex items-center justify-center text-[#0a1628]/20 font-serif">
+                                No image
+                              </div>
+                            )}
+                            <span className="absolute left-3 top-3 rounded px-2 py-1 text-xs font-semibold uppercase tracking-wide bg-[#c9a84c] text-[#0a1628]">
+                              {getCategoryLabel(post.category as string)}
+                            </span>
                           </div>
-                        </div>
-                      </article>
-                    </Link>
-                  </li>
+                          <div className="p-5">
+                            <h3 className="font-serif text-xl font-semibold leading-snug text-[#0a1628] line-clamp-2">
+                              {String(post.title ?? '')}
+                            </h3>
+                            {post.excerpt ? (
+                              <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-[#0a1628]/70">
+                                {String(post.excerpt)}
+                              </p>
+                            ) : null}
+                            <div className="mt-4 flex flex-wrap items-center gap-x-3 text-xs text-[#0a1628]/55">
+                              {post.authorName ? (
+                                <span>{String(post.authorName)}</span>
+                              ) : null}
+                              {post.publishedAt ? (
+                                <span>{formatDate(post.publishedAt as string)}</span>
+                              ) : null}
+                            </div>
+                          </div>
+                        </article>
+                      </Link>
+                    </div>
+                  </FadeInItem>
                 ))}
-              </ul>
+              </FadeInStagger>
             </div>
           </section>
         )}

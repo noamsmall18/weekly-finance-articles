@@ -18,25 +18,25 @@ const baseUrl = getBaseUrl();
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "Weekly Finance Articles",
-    template: "%s | Weekly Finance Articles",
+    default: "Next Gen Finance",
+    template: "%s | Next Gen Finance",
   },
   description:
-    "Your weekly source for finance news, market updates, investing tips and personal finance advice.",
+    "Financial literacy for the next generation — clear, well-researched coverage of markets, business, and the economy, written by passionate young journalists.",
   openGraph: {
     type: "website",
     locale: "en_US",
     url: baseUrl,
-    siteName: "Weekly Finance Articles",
-    title: "Weekly Finance Articles",
+    siteName: "Next Gen Finance",
+    title: "Next Gen Finance",
     description:
-      "Your weekly source for finance news, market updates, investing tips and personal finance advice.",
+      "Financial literacy for the next generation — clear, well-researched coverage of markets, business, and the economy.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Weekly Finance Articles",
+    title: "Next Gen Finance",
     description:
-      "Your weekly source for finance news, market updates, investing tips and personal finance advice.",
+      "Financial literacy for the next generation — clear, well-researched coverage of markets, business, and the economy.",
   },
 };
 
