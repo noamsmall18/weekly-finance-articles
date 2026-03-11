@@ -191,9 +191,6 @@ export default async function AuthorPage({
                               {post.publishedAt ? (
                                 <span>{formatDate(post.publishedAt as string)}</span>
                               ) : null}
-                              {(post.readingTime as number) > 0 ? (
-                                <span>{Math.max(1, post.readingTime as number)} min read</span>
-                              ) : null}
                             </div>
                           </div>
                         </article>
