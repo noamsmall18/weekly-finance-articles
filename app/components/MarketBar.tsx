@@ -99,7 +99,7 @@ export function MarketBar() {
               <span className="inline-flex h-1.5 w-1.5 rounded-full bg-[#0a1628]/20 dark:bg-white/25" />
             )}
           </span>
-          <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-[#0a1628]/70 dark:text-white/70 whitespace-nowrap pr-2">
+          <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-[#0a1628]/70 dark:text-white/70 whitespace-nowrap pr-10">
             {marketOpen ? 'Live' : 'Closed'}
           </span>
           <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white dark:from-[#0c1827] to-transparent pointer-events-none" />
