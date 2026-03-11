@@ -25,7 +25,8 @@ const HOMEPAGE_QUERY = `*[_type == "post"] | order(coalesce(publishedAt, _create
   mainImage,
   "authorName": author->name,
   "publishedAt": coalesce(publishedAt, _createdAt),
-  tags
+  tags,
+  "readingTime": round(length(pt::text(body)) / 1000)
 }`
 
 
@@ -244,6 +245,9 @@ export default async function Home() {
                         <div className="mt-4 flex flex-wrap items-center gap-x-3 text-xs text-[#0a1628]/45 dark:text-white/40">
                           {post.authorName ? <span>{String(post.authorName)}</span> : null}
                           {post.publishedAt ? <span>{formatDate(post.publishedAt as string)}</span> : null}
+                          {(post.readingTime as number) > 0 ? (
+                            <span>{Math.max(1, post.readingTime as number)} min read</span>
+                          ) : null}
                         </div>
                       </div>
                     </article>

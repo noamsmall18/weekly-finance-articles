@@ -36,7 +36,8 @@ const AUTHOR_POSTS_QUERY = `*[_type == "post" && author._ref == $authorId] | ord
   category,
   mainImage,
   "publishedAt": coalesce(publishedAt, _createdAt),
-  tags
+  tags,
+  "readingTime": round(length(pt::text(body)) / 1000)
 }`
 
 function formatDate(dateString: string | null) {
@@ -96,24 +97,24 @@ export default async function AuthorPage({
   const allPosts = Array.isArray(posts) ? (posts as Record<string, unknown>[]) : []
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-[#0c1827] transition-colors duration-200">
       <Navbar />
       <MarketBar />
 
       <main>
         <FadeIn>
-          <section className="border-b border-[#0a1628]/10 bg-[#0a1628]/[0.02]">
+          <section className="border-b border-[#0a1628]/10 dark:border-white/10 bg-[#0a1628]/[0.02] dark:bg-white/[0.03]">
             <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
               <Link
                 href="/"
-                className="inline-flex items-center gap-2 text-sm font-medium text-[#0a1628]/60 hover:text-[#c9a84c] transition-colors"
+                className="inline-flex items-center gap-2 text-sm font-medium text-[#0a1628]/60 dark:text-white/50 hover:text-[#c9a84c] transition-colors"
               >
                 <span aria-hidden>←</span> Home
               </Link>
 
               <div className="mt-6 flex items-center gap-5">
                 {a.image && (
-                  <div className="relative h-20 w-20 overflow-hidden rounded-full bg-[#0a1628]/5 flex-shrink-0">
+                  <div className="relative h-20 w-20 overflow-hidden rounded-full bg-[#0a1628]/5 dark:bg-white/5 flex-shrink-0">
                     <Image
                       src={urlFor(a.image).width(160).height(160).url()}
                       alt={a.name ?? 'Author'}
@@ -124,17 +125,17 @@ export default async function AuthorPage({
                   </div>
                 )}
                 <div>
-                  <h1 className="font-serif text-2xl font-bold text-[#0a1628] sm:text-3xl">
+                  <h1 className="font-serif text-2xl font-bold text-[#0a1628] dark:text-white sm:text-3xl">
                     {a.name}
                   </h1>
-                  <p className="mt-0.5 text-sm text-[#0a1628]/60">
+                  <p className="mt-0.5 text-sm text-[#0a1628]/60 dark:text-white/50">
                     {allPosts.length} article{allPosts.length !== 1 ? 's' : ''}
                   </p>
                 </div>
               </div>
 
               {Array.isArray(a.bio) && a.bio.length > 0 && (
-                <div className="mt-5 text-[#0a1628]/80 leading-relaxed">
+                <div className="mt-5 text-[#0a1628]/80 dark:text-white/65 leading-relaxed">
                   {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                   <PortableText value={a.bio as any} />
                 </div>
@@ -147,15 +148,15 @@ export default async function AuthorPage({
           {allPosts.length > 0 ? (
             <>
               <FadeIn>
-                <h2 className="font-serif text-xl font-bold text-[#0a1628]">Articles</h2>
+                <h2 className="font-serif text-xl font-bold text-[#0a1628] dark:text-white">Articles</h2>
               </FadeIn>
               <FadeInStagger className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
                 {allPosts.map((post) => (
                   <FadeInItem key={String(post._id)}>
                     <div className="group h-full">
                       <Link href={post.slug ? `/article/${post.slug}` : '#'} className="block h-full">
-                        <article className="h-full overflow-hidden rounded-lg border border-[#0a1628]/10 bg-white transition-shadow hover:shadow-lg">
-                          <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#0a1628]/5">
+                        <article className="h-full overflow-hidden rounded-xl border border-[#0a1628]/10 dark:border-white/[0.07] bg-white dark:bg-[#122035] transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                          <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#0a1628]/5 dark:bg-white/5">
                             {post.mainImage ? (
                               <Image
                                 src={urlFor(post.mainImage).width(600).height(340).url()}
@@ -169,28 +170,31 @@ export default async function AuthorPage({
                                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                               />
                             ) : (
-                              <div className="absolute inset-0 flex items-center justify-center text-[#0a1628]/20 font-serif">
+                              <div className="absolute inset-0 flex items-center justify-center text-[#0a1628]/20 dark:text-white/15 font-serif">
                                 No image
                               </div>
                             )}
-                            <span className="absolute left-3 top-3 rounded px-2 py-1 text-xs font-medium uppercase tracking-wide bg-[#c9a84c] text-[#0a1628]">
+                            <span className="absolute left-3 top-3 rounded px-2 py-1 text-[10px] font-bold uppercase tracking-wide bg-[#c9a84c] text-[#0a1628]">
                               {getCategoryLabel(post.category as string)}
                             </span>
                           </div>
                           <div className="p-5">
-                            <h3 className="font-serif text-xl font-semibold leading-snug text-[#0a1628] line-clamp-2">
+                            <h3 className="font-serif text-xl font-semibold leading-snug text-[#0a1628] dark:text-white/90 line-clamp-2 group-hover:text-[#c9a84c] transition-colors duration-200">
                               {String(post.title ?? '')}
                             </h3>
                             {post.excerpt ? (
-                              <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-[#0a1628]/75">
+                              <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-[#0a1628]/65 dark:text-white/55">
                                 {String(post.excerpt)}
                               </p>
                             ) : null}
-                            {post.publishedAt ? (
-                              <p className="mt-4 text-xs text-[#0a1628]/60">
-                                {formatDate(post.publishedAt as string)}
-                              </p>
-                            ) : null}
+                            <div className="mt-4 flex flex-wrap items-center gap-x-3 text-xs text-[#0a1628]/50 dark:text-white/40">
+                              {post.publishedAt ? (
+                                <span>{formatDate(post.publishedAt as string)}</span>
+                              ) : null}
+                              {(post.readingTime as number) > 0 ? (
+                                <span>{Math.max(1, post.readingTime as number)} min read</span>
+                              ) : null}
+                            </div>
                           </div>
                         </article>
                       </Link>
@@ -200,7 +204,7 @@ export default async function AuthorPage({
               </FadeInStagger>
             </>
           ) : (
-            <p className="text-[#0a1628]/60">No articles yet.</p>
+            <p className="text-[#0a1628]/60 dark:text-white/50">No articles yet.</p>
           )}
         </section>
       </main>

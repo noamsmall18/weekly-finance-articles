@@ -312,9 +312,9 @@ export default async function ArticlePage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <ReadingProgressBar />
-      <MarketBar />
       <BackToTop />
       <Navbar />
+      <MarketBar />
 
       <main>
         {/* Back link */}

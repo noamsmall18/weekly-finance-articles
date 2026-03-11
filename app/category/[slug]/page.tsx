@@ -36,7 +36,8 @@ const CATEGORY_QUERY = `*[_type == "post" && category == $category] | order(coal
   "authorName": author->name,
   "authorSlug": author->slug.current,
   "publishedAt": coalesce(publishedAt, _createdAt),
-  tags
+  tags,
+  "readingTime": round(length(pt::text(body)) / 1000)
 }`
 
 function formatDate(dateString: string | null) {
@@ -157,6 +158,9 @@ export default async function CategoryPage({
                             {post.authorName ? <span>{String(post.authorName)}</span> : null}
                             {post.publishedAt ? (
                               <span>{formatDate(post.publishedAt as string)}</span>
+                            ) : null}
+                            {(post.readingTime as number) > 0 ? (
+                              <span>{Math.max(1, post.readingTime as number)} min read</span>
                             ) : null}
                           </div>
                         </div>

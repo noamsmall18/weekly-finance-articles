@@ -22,7 +22,8 @@ const ALL_POSTS_QUERY = `*[_type == "post"] | order(coalesce(publishedAt, _creat
   "authorName": author->name,
   "authorSlug": author->slug.current,
   "publishedAt": coalesce(publishedAt, _createdAt),
-  tags
+  tags,
+  "readingTime": round(length(pt::text(body)) / 1000)
 }`
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -166,6 +167,9 @@ export default async function ArchivePage() {
                             {post.authorName ? <span>{String(post.authorName)}</span> : null}
                             {post.publishedAt ? (
                               <span>{formatDate(post.publishedAt as string)}</span>
+                            ) : null}
+                            {(post.readingTime as number) > 0 ? (
+                              <span>{Math.max(1, post.readingTime as number)} min read</span>
                             ) : null}
                           </div>
                         </div>
