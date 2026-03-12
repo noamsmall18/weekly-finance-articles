@@ -71,6 +71,9 @@ export function Navbar() {
   const router = useRouter()
   const pathname = usePathname()
 
+  // Close mobile menu when route changes (back/forward navigation)
+  useEffect(() => { setOpen(false) }, [pathname])
+
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {

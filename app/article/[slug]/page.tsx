@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { PortableText } from 'next-sanity'
+import { notFound } from 'next/navigation'
 import { sanityFetch, urlFor } from '@/lib/sanity'
 import { getBaseUrl } from '@/lib/site'
 import { Navbar } from '@/app/components/Navbar'
@@ -263,20 +264,7 @@ export default async function ArticlePage({
   const { slug } = await params
   const article = await sanityFetch(ARTICLE_QUERY, { slug })
 
-  if (!article) {
-    return (
-      <div className="min-h-screen bg-white dark:bg-[#0c1827] transition-colors duration-200">
-        <Navbar />
-        <main className="mx-auto max-w-3xl px-4 py-16 text-center">
-          <h1 className="font-serif text-2xl font-bold text-[#0a1628] dark:text-white">Article not found</h1>
-          <Link href="/" className="mt-4 inline-flex items-center gap-2 text-[#c9a84c] hover:underline">
-            Back to Home
-          </Link>
-        </main>
-        <Footer />
-      </div>
-    )
-  }
+  if (!article) notFound()
 
   const relatedPosts = await sanityFetch(RELATED_QUERY, {
     id: article._id,
