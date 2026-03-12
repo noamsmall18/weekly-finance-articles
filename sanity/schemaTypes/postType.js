@@ -17,8 +17,22 @@ export const postType = defineType({
       type: 'slug',
       options: {
         source: 'title',
+        slugify: (input) =>
+          input
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .slice(0, 96),
       },
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) =>
+        Rule.required().custom((slug) => {
+          if (!slug?.current) return 'Slug is required'
+          if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug.current))
+            return 'Slug must be lowercase letters, numbers, and hyphens only (e.g. my-article-title)'
+          return true
+        }),
     }),
     defineField({
       name: 'category',

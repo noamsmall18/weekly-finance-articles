@@ -69,7 +69,7 @@ export function NewsletterSignup() {
                   disabled={status === 'loading'}
                   className="rounded-lg bg-[#c9a84c] px-6 py-3 text-sm font-semibold text-[#0a1628] transition hover:bg-[#b8963d] disabled:opacity-60 whitespace-nowrap"
                 >
-                  {status === 'loading' ? 'Subscribing...' : 'Subscribe free'}
+                  {status === 'loading' ? 'Subscribing...' : 'Subscribe'}
                 </button>
               </motion.form>
             )}
