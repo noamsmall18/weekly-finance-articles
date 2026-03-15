@@ -9,8 +9,6 @@ export interface MarketItem {
 }
 
 // Yahoo Finance — free, no key, works for indices + commodities
-// Uses range=5d so we always have at least two sessions to diff against,
-// which fixes the 0% issue on weekends when range=1d returns a non-trading day.
 async function fetchYahoo(label: string, symbol: string, opts?: Partial<MarketItem>): Promise<MarketItem> {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=5d`
   const res = await fetch(url, {
@@ -24,18 +22,26 @@ async function fetchYahoo(label: string, symbol: string, opts?: Partial<MarketIt
   if (!meta?.regularMarketPrice) throw new Error(`No price for ${symbol}`)
 
   const price: number = meta.regularMarketPrice
+  const chartPrev: number | undefined = meta.chartPreviousClose ?? meta.previousClose
 
-  // Pull the last two valid daily closes from the chart data.
-  // This gives correct Friday→Thursday diff on weekends instead of 0%.
+  // When market is open (or after-hours on a trading day), chartPrev is yesterday's
+  // close and differs from the live price — use it directly for the correct change.
+  if (chartPrev && chartPrev !== price) {
+    return { label, price, changePercent: ((price - chartPrev) / chartPrev) * 100, ...opts }
+  }
+
+  // When markets are closed (weekend / holiday), price === chartPrev because
+  // Yahoo sets both to the last session's close, giving 0%.
+  // Fix: compute the change from the last two valid closes in the 5d chart history.
   const rawCloses: (number | null)[] = result?.indicators?.quote?.[0]?.close ?? []
   const closes = rawCloses.filter((c): c is number => c !== null && c !== undefined && c > 0)
-  const prevClose: number =
-    closes.length >= 2
-      ? closes[closes.length - 2]
-      : (meta.chartPreviousClose ?? meta.previousClose ?? price)
+  if (closes.length >= 2) {
+    const lastClose = closes[closes.length - 1]   // e.g. Friday close
+    const prevClose = closes[closes.length - 2]   // e.g. Thursday close
+    return { label, price, changePercent: ((lastClose - prevClose) / prevClose) * 100, ...opts }
+  }
 
-  const changePercent = prevClose && prevClose !== price ? ((price - prevClose) / prevClose) * 100 : 0
-  return { label, price, changePercent, ...opts }
+  return { label, price, changePercent: 0, ...opts }
 }
 
 // Finnhub — real-time, requires API key (falls back to Yahoo if key missing)
