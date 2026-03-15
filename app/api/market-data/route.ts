@@ -9,19 +9,32 @@ export interface MarketItem {
 }
 
 // Yahoo Finance — free, no key, works for indices + commodities
+// Uses range=5d so we always have at least two sessions to diff against,
+// which fixes the 0% issue on weekends when range=1d returns a non-trading day.
 async function fetchYahoo(label: string, symbol: string, opts?: Partial<MarketItem>): Promise<MarketItem> {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=1d`
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=5d`
   const res = await fetch(url, {
     headers: { 'User-Agent': 'Mozilla/5.0', Accept: 'application/json' },
     next: { revalidate: 30 },
   })
   if (!res.ok) throw new Error(`Yahoo ${symbol} ${res.status}`)
   const json = await res.json()
-  const meta = json?.chart?.result?.[0]?.meta
+  const result = json?.chart?.result?.[0]
+  const meta = result?.meta
   if (!meta?.regularMarketPrice) throw new Error(`No price for ${symbol}`)
+
   const price: number = meta.regularMarketPrice
-  const prev: number = meta.chartPreviousClose ?? meta.previousClose ?? price
-  const changePercent = prev ? ((price - prev) / prev) * 100 : 0
+
+  // Pull the last two valid daily closes from the chart data.
+  // This gives correct Friday→Thursday diff on weekends instead of 0%.
+  const rawCloses: (number | null)[] = result?.indicators?.quote?.[0]?.close ?? []
+  const closes = rawCloses.filter((c): c is number => c !== null && c !== undefined && c > 0)
+  const prevClose: number =
+    closes.length >= 2
+      ? closes[closes.length - 2]
+      : (meta.chartPreviousClose ?? meta.previousClose ?? price)
+
+  const changePercent = prevClose && prevClose !== price ? ((price - prevClose) / prevClose) * 100 : 0
   return { label, price, changePercent, ...opts }
 }
 
